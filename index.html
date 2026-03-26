@@ -1,0 +1,1715 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能批改 - Sigma Education</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/antd/5.12.8/reset.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-blue: #1890ff;
+            --primary-blue-hover: #40a9ff;
+            --success-green: #52c41a;
+            --error-red: #ff4d4f;
+            --warning-orange: #fa8c16;
+            --bg-gray: #f0f2f5;
+            --text-dark: #262626;
+            --text-secondary: #8c8c8c;
+            --border-color: #e8e8e8;
+            --card-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            --hover-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            background-color: var(--bg-gray);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Navigation Bar */
+        .navbar {
+            background: #fff;
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+
+        .page-title-row {
+            background: #fff;
+            padding: 8px 24px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-dark);
+            border-bottom: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+
+        .page-title-row .back-icon {
+            display: flex;
+            align-items: center;
+            color: var(--text-secondary);
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--primary-blue);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 18px;
+        }
+
+        .logo-text {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .sub-header-outer {
+            padding: 12px 24px 16px;
+            background: var(--bg-gray);
+            flex-shrink: 0;
+        }
+
+        .sub-header {
+            background: #e8f4ff;
+            padding: 14px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px;
+            border: 1px solid #d6ebff;
+            box-shadow: var(--card-shadow);
+        }
+
+        .sub-header-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .tab-active {
+            background: var(--primary-blue);
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .plan-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .edit-icon {
+            width: 16px;
+            height: 16px;
+            color: var(--text-secondary);
+            cursor: pointer;
+        }
+
+        .plan-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        .meta-divider {
+            width: 1px;
+            height: 12px;
+            background: var(--border-color);
+        }
+
+        .sub-header-right {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-blue-hover);
+        }
+
+        .btn-secondary {
+            background: #fff;
+            color: var(--text-dark);
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--primary-blue);
+            color: var(--primary-blue);
+        }
+
+        .btn-disabled {
+            background: #f5f5f5;
+            color: var(--text-secondary);
+            cursor: not-allowed;
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-outline {
+            background: #fff;
+            color: var(--primary-blue);
+            border: 1px solid var(--primary-blue);
+        }
+
+        .btn-outline:hover {
+            background: #e6f7ff;
+        }
+
+        /* Main Layout */
+        .main-container {
+            display: flex;
+            flex: 1;
+            min-height: 0;
+            padding: 16px 24px 20px;
+            gap: 16px;
+            align-items: stretch;
+            overflow-x: auto;
+            min-width: 0;
+        }
+
+        /* Left Sidebar */
+        .left-sidebar {
+            flex: 0 0 17%;
+            width: 17%;
+            min-width: 240px;
+            max-width: 280px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 12px 10px 36px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-input:focus {
+            border-color: var(--primary-blue);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .student-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .student-card {
+            background: #fff;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .student-card:hover {
+            border-color: var(--primary-blue);
+        }
+
+        .student-card.active {
+            border-color: var(--primary-blue);
+            background: #e6f7ff;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .student-info {
+            flex: 1;
+        }
+
+        .student-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .student-id {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        .student-score {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary-blue);
+        }
+
+        .student-status {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Center Column */
+        .center-column {
+            flex: 0 0 600px;
+            width: 600px;
+            max-width: 600px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-width: 600px;
+        }
+
+        .upload-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .image-panel {
+            flex: 1;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            display: flex;
+            overflow: hidden;
+            min-height: 420px;
+            min-width: 0;
+        }
+
+        .thumbnail-list {
+            flex: 0 0 149px;
+            width: 149px;
+            background: #f5f5f5;
+            padding: 12px 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .thumbnail-item {
+            width: 125px;
+            height: 185px;
+            background: #fff;
+            border: 2px solid transparent;
+            border-radius: 4px;
+            cursor: grab;
+            position: relative;
+            overflow: hidden;
+            transition: border-color 0.2s, box-shadow 0.15s, opacity 0.15s;
+            user-select: none;
+        }
+
+        .thumbnail-item:hover {
+            border-color: var(--primary-blue);
+            box-shadow: 0 2px 8px rgba(24, 144, 255, 0.2);
+        }
+
+        .thumbnail-item.active {
+            outline: 3px solid var(--primary-blue);
+            outline-offset: -4px;
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+        }
+
+        .thumbnail-item.dragging {
+            opacity: 0.35;
+            cursor: grabbing;
+        }
+
+        .thumbnail-item.drag-over {
+            border-color: var(--primary-blue);
+            background: #e6f7ff;
+            box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.3);
+        }
+
+        .thumbnail-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center top;
+        }
+
+        .delete-btn {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 18px;
+            height: 18px;
+            background: var(--error-red);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 12px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .thumbnail-item:hover .delete-btn {
+            opacity: 1;
+        }
+
+        .main-preview {
+            flex: 1;
+            min-width: 0;
+            padding: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #fafafa;
+            overflow: auto;
+        }
+
+        .main-preview img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Right Column */
+        .right-column {
+            flex: 1 1 950px;
+            min-width: 520px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            background: #f0f7fc;
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid #e1eef8;
+        }
+
+        .result-card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+            padding: 16px;
+            border: 1px solid var(--border-color);
+        }
+
+        .result-card-header {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 12px;
+        }
+
+        .result-card--stats .result-card-header {
+            margin-bottom: 10px;
+        }
+
+        /* Stats Row */
+        .stats-row {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0;
+            padding: 12px 16px;
+            background: #fafafa;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .stat-item {
+            display: inline-flex;
+            align-items: baseline;
+            gap: 6px;
+            padding: 0 16px;
+            border-right: 1px solid var(--border-color);
+        }
+
+        .stat-item:first-child {
+            padding-left: 0;
+        }
+
+        .stat-item:last-child {
+            border-right: none;
+            padding-right: 0;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 0;
+        }
+
+        .stat-value {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        .stat-value.total { color: var(--text-dark); }
+        .stat-value.correct { color: var(--success-green); }
+        .stat-value.wrong { color: var(--error-red); }
+        .stat-value.accuracy { color: var(--warning-orange); }
+
+        /* Question Tabs */
+        .question-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .question-tab {
+            padding: 6px 14px;
+            background: #fff;
+            color: var(--primary-blue);
+            border: 1px solid #91d5ff;
+            border-radius: 16px;
+            font-size: 12px;
+            cursor: default;
+            white-space: nowrap;
+        }
+
+        .question-tab.is-active {
+            background: var(--primary-blue);
+            color: #fff;
+            border-color: var(--primary-blue);
+            cursor: pointer;
+        }
+
+        .question-tab.is-active:hover {
+            opacity: 0.85;
+        }
+
+        /* Question Grid */
+        .question-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .question-badge {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .question-badge.correct {
+            background: var(--success-green);
+            color: #fff;
+        }
+
+        .question-badge.wrong {
+            background: var(--error-red);
+            color: #fff;
+        }
+
+        .question-badge.current {
+            transform: scale(1.25);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+            font-weight: 700;
+        }
+
+        /* Recognition Detail */
+        .recognition-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+        }
+
+        .recognition-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            width: 80px;
+        }
+
+        .recognition-value {
+            font-size: 14px;
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+
+        .result-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            background: #f6ffed;
+            border: 1px solid var(--success-green);
+            color: var(--success-green);
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        /* AI Solution Card */
+        .ai-solution {
+            background: var(--bg-gray);
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 12px;
+        }
+
+        .ai-solution-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .ai-solution-value {
+            font-size: 14px;
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+
+        .explanation-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .explanation-title::before {
+            content: '';
+            width: 3px;
+            height: 14px;
+            background: var(--primary-blue);
+            border-radius: 2px;
+        }
+
+        .explanation-content {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #d9d9d9; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #bfbfbf; }
+
+        /* Thumbnail Link Button */
+        .thumbnail-link-btn {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 36px;
+            height: 36px;
+            background: rgba(255, 255, 255, 0.92);
+            border: 2px solid #ccc;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.2s;
+            backdrop-filter: blur(2px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .thumbnail-item:hover .thumbnail-link-btn {
+            display: inline-flex;
+        }
+
+        /* 批改进行中，隐藏所有链接按钮（禁止新建和取消链接） */
+        body.grading-started .thumbnail-link-btn {
+            display: none !important;
+        }
+
+        .thumbnail-link-btn:hover {
+            background: var(--primary-blue);
+            border-color: var(--primary-blue);
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        .thumbnail-link-btn:hover svg {
+            stroke: #fff;
+        }
+
+        .thumbnail-link-btn svg {
+            width: 16px;
+            height: 16px;
+            stroke: #888;
+            fill: none;
+            stroke-width: 2;
+        }
+
+        /* 已链接缩略图的彩色外框（提示哪些图已配对） */
+        .thumbnail-item.is-linked {
+            outline: 3px solid var(--link-color, #FF9800);
+            outline-offset: -4px;
+        }
+
+        .thumbnail-item.is-linked::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            right: -1px;
+            width: 8px;
+            height: 8px;
+            background: var(--link-color, #FF9800);
+            border-radius: 50%;
+            z-index: 11;
+        }
+
+        /* 链接模式：等待配对状态 */
+        @keyframes linking-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(24, 144, 255, 0.4); }
+            50% { box-shadow: 0 0 0 6px rgba(24, 144, 255, 0); }
+        }
+
+        .thumbnail-item.linking-pending {
+            border-color: var(--primary-blue);
+            animation: linking-pulse 1.2s ease-in-out infinite;
+        }
+
+        .thumbnail-item.linking-pending .thumbnail-link-btn {
+            display: inline-flex;
+            background: var(--primary-blue);
+            border-color: var(--primary-blue);
+            transform: translate(-50%, -50%) scale(1.1);
+        }
+
+        .thumbnail-item.linking-pending .thumbnail-link-btn svg {
+            stroke: #fff;
+        }
+    </style>
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <nav class="navbar">
+        <div class="logo-area">
+            <div class="logo-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 10v6M2 10l10-5 10 5-10 5z"/>
+                    <path d="M6 12v5c3 3 9 3 12 0v-5"/>
+                </svg>
+            </div>
+            <span class="logo-text">兆涵科技 Sigma Education</span>
+        </div>
+    </nav>
+
+    <div class="page-title-row">
+        <span class="back-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="19" y1="12" x2="5" y2="12"/>
+                <polyline points="12 19 5 12 12 5"/>
+            </svg>
+        </span>
+        <span>智能批改</span>
+    </div>
+
+    <!-- Sub Header -->
+    <div class="sub-header-outer">
+    <header class="sub-header">
+        <div class="sub-header-left">
+            <span class="tab-active">习题批改</span>
+            <div>
+                <div class="plan-title">
+                    <span>智能批改计划</span>
+                    <svg class="edit-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                </div>
+                <div class="plan-meta">
+                    <span>测试组</span>
+                    <span class="meta-divider"></span>
+                    <span>3份作业</span>
+                    <span class="meta-divider"></span>
+                    <span>平均正确率: 91%</span>
+                </div>
+            </div>
+        </div>
+        <div class="sub-header-right">
+            <button class="btn btn-disabled">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="5 3 19 12 5 21 5 3"/>
+                </svg>
+                全部开始批改
+            </button>
+            <button class="btn btn-primary">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                批量上传作业
+            </button>
+            <button type="button" class="btn btn-outline">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="23 4 23 10 17 10"/>
+                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                </svg>
+                刷新
+            </button>
+        </div>
+    </header>
+    </div>
+
+    <!-- Main Container -->
+    <main class="main-container">
+        <!-- Left Sidebar -->
+        <aside class="left-sidebar">
+            <div class="search-box">
+                <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input type="text" class="search-input" placeholder="搜索学生">
+            </div>
+
+            <div class="student-list">
+                <div class="student-card active">
+                    <div class="avatar">李</div>
+                    <div class="student-info">
+                        <div class="student-name">李1</div>
+                        <div class="student-id">20250022</div>
+                    </div>
+                    <div class="student-score">97</div>
+                </div>
+
+                <div class="student-card">
+                    <div class="avatar">李</div>
+                    <div class="student-info">
+                        <div class="student-name">李2</div>
+                        <div class="student-id">20250023</div>
+                    </div>
+                    <div class="student-score">84</div>
+                </div>
+
+                <div class="student-card">
+                    <div class="avatar">李</div>
+                    <div class="student-info">
+                        <div class="student-name">李3</div>
+                        <div class="student-id">20250024</div>
+                    </div>
+                    <div class="student-status">未上传</div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Center Column -->
+        <section class="center-column">
+            <div class="upload-actions">
+                <button type="button" class="btn btn-primary" id="btn-start-grading">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5 3 19 12 5 21 5 3"/>
+                    </svg>
+                    开始批改
+                </button>
+                <button type="button" class="btn btn-primary" id="btn-upload-local">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="12" y1="18" x2="12" y2="12"/>
+                        <line x1="9" y1="15" x2="15" y2="15"/>
+                    </svg>
+                    本地上传作业
+                </button>
+                <button type="button" class="btn btn-primary" id="btn-upload-mobile">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+                        <line x1="12" y1="18" x2="12.01" y2="18"/>
+                    </svg>
+                    手机拍照上传
+                </button>
+            </div>
+
+            <div class="image-panel">
+                <!-- Thumbnail List -->
+                <div class="thumbnail-list" id="thumbnail-list">
+                    <div class="thumbnail-item active" data-src="assets/worksheet-preview.png" data-thumb-id="thumb-0" data-page-idx="0">
+                        <img src="assets/worksheet-preview.png" alt="作业 1">
+                        <button class="thumbnail-link-btn" title="链接" aria-label="链接">
+                            <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                        </button>
+                        <span class="delete-btn" role="button" tabindex="0" aria-label="删除">×</span>
+                    </div>
+                </div>
+
+                <!-- Main Preview -->
+                <div class="main-preview">
+                    <img id="main-preview-img" src="assets/worksheet-preview.png" alt="作业预览">
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Column -->
+        <aside class="right-column">
+            <!-- 空状态占位 -->
+            <div id="grading-placeholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center;flex:1;min-height:0;padding:60px 30px;">
+                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="#d9d9d9" stroke-width="1.5" style="flex-shrink:0;">
+                    <path d="M9 11l3 3L22 4"/>
+                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                </svg>
+                <div>
+                    <div style="font-size:15px;font-weight:600;color:#333;margin-bottom:6px;">当前暂无批改数据</div>
+                    <div style="font-size:13px;color:#999;">请点击上方<span style="color:var(--primary-blue);font-weight:500;">开始批改</span>按钮加载批改内容</div>
+                </div>
+            </div>
+
+            <!-- 批改面板（初始隐藏，点击开始批改后显示）-->
+            <div id="grading-panel" style="display:none;flex-direction:column;gap:12px;flex:1;min-height:0;overflow-y:auto;padding:0;">
+            <!-- Summary Card -->
+            <div class="result-card result-card--stats">
+                <div class="result-card-header">批改结果</div>
+                <div class="stats-row">
+                    <div class="stat-item">
+                        <span class="stat-label">总题数:</span>
+                        <span class="stat-value total" id="stats-total">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">答对:</span>
+                        <span class="stat-value correct" id="stats-correct">0题</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">答错:</span>
+                        <span class="stat-value wrong" id="stats-wrong">0题</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">正确率:</span>
+                        <span class="stat-value accuracy" id="stats-accuracy">—</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question Selection Card -->
+            <div class="result-card">
+                <div class="result-card-header">题目选择</div>
+                <div class="question-tabs" id="question-tabs"></div>
+                <div class="question-grid" id="question-grid"></div>
+            </div>
+
+            <!-- Recognition Detail Card -->
+            <div class="result-card">
+                <div class="result-card-header">识别结果</div>
+                <div class="recognition-row">
+                    <span class="recognition-label">识别题目:</span>
+                    <span class="recognition-value" id="recog-question">—</span>
+                </div>
+                <div class="recognition-row">
+                    <span class="recognition-label">学生答案:</span>
+                    <span class="recognition-value" id="recog-answer">—</span>
+                    <span class="result-badge" id="recog-result">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                        正确
+                    </span>
+                </div>
+            </div>
+
+                <!-- AI Solution Card -->
+                <div class="result-card">
+                    <div class="ai-solution">
+                        <div class="ai-solution-label">AI标准答案</div>
+                        <div class="ai-solution-value" id="ai-answer">—</div>
+                    </div>
+                    <div class="explanation-title">详细解题思路</div>
+                    <div class="explanation-content" id="ai-explanation">点击左侧题目编号查看详细解题思路。</div>
+                    <!-- 单题批改按钮 -->
+                    <div class="grading-actions" style="margin-top:14px;display:flex;gap:8px;">
+                        <button type="button" class="btn btn-secondary" id="btn-mark-correct" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 12px;font-size:13px;">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                            标记正确
+                        </button>
+                        <button type="button" class="btn btn-secondary" id="btn-mark-wrong" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 12px;font-size:13px;">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                            标记错误
+                        </button>
+                    </div>
+                </div>
+            </div><!-- /grading-panel -->
+        </aside>
+    </main>
+
+    <script>
+        (function () {
+            var EXTRA_SRC = [
+                'assets/homework-extra-1.png',
+                'assets/homework-extra-2.png',
+                'assets/homework-extra-3.png'
+            ];
+            var demoExtrasAdded = false;
+            var draggedEl = null;
+
+            var listEl    = document.getElementById('thumbnail-list');
+            var mainImg   = document.getElementById('main-preview-img');
+            var btnLocal  = document.getElementById('btn-upload-local');
+            var btnMobile = document.getElementById('btn-upload-mobile');
+
+            var gradingStarted = false; // 批改是否已开始
+
+            /* ========== 开始批改 ========== */
+            function startGrading() {
+                if (gradingStarted) return;
+                gradingStarted = true;
+                var btn = document.getElementById('btn-start-grading');
+                if (btn) {
+                    btn.classList.remove('btn-primary');
+                    btn.classList.add('btn-disabled');
+                    btn.disabled = true;
+                }
+                // 隐藏占位提示，显示批改面板
+                var placeholder = document.getElementById('grading-placeholder');
+                if (placeholder) placeholder.style.display = 'none';
+                var panel = document.getElementById('grading-panel');
+                if (panel) panel.style.display = '';
+                document.body.classList.add('grading-started');
+
+                // 渲染右侧内容
+                renderQuestionPanel(0);
+                updateStats();
+            }
+
+            /* ========== 统计正确率 ========== */
+            function updateStats() {
+                var total = 0, correct = 0;
+                PAGES.forEach(function (page) {
+                    page.sections.forEach(function (sec) {
+                        sec.questions.forEach(function (q) {
+                            total++;
+                            if (q.result === 'correct') correct++;
+                        });
+                    });
+                });
+                var el = document.getElementById('stats-total');
+                if (el) el.textContent = total;
+                el = document.getElementById('stats-correct');
+                if (el) el.textContent = correct + '题';
+                el = document.getElementById('stats-wrong');
+                if (el) el.textContent = (total - correct) + '题';
+                el = document.getElementById('stats-accuracy');
+                if (el) el.textContent = total > 0 ? Math.round(correct / total * 100) + '%' : '—';
+            }
+            var linkMap = {};       // thumbId -> thumbId（双向）
+            var linkingMode = null;  // 当前等待配对的第一个缩略图元素
+            var linkGroupCounter = 0; // 配对编号（用于分配颜色）
+
+            var LINK_COLORS = [
+                '#FF9800', // 橙
+                '#E91E63', // 粉红
+                '#9C27B0', // 紫色
+                '#00BCD4', // 青色
+                '#4CAF50', // 绿色
+                '#795548', // 棕色
+            ];
+
+            function getThumbId(el) {
+                return el.getAttribute('data-thumb-id');
+            }
+
+            function isThumbLinked(el) {
+                var id = getThumbId(el);
+                return !!(id && linkMap[id]);
+            }
+
+            function getLinkPartner(el) {
+                var id = getThumbId(el);
+                if (!id || !linkMap[id]) return null;
+                return document.querySelector('[data-thumb-id="' + linkMap[id] + '"]');
+            }
+
+            function getLinkGroupId(el) {
+                return el.getAttribute('data-link-group');
+            }
+
+            function canLink(el) {
+                if (gradingStarted) return false;
+                return el.getAttribute('data-graded') !== 'true';
+            }
+
+            function setThumbGraded(el, graded) {
+                if (graded) {
+                    if (isThumbLinked(el)) unlinkThumbs(el);
+                    el.setAttribute('data-graded', 'true');
+                    el.classList.remove('is-linked');
+                    el.style.removeProperty('--link-color');
+                    el.removeAttribute('data-link-group');
+                } else {
+                    el.removeAttribute('data-graded');
+                }
+            }
+
+            function enterLinkingMode(el) {
+                linkingMode = el;
+                el.classList.add('linking-pending');
+                var btn = el.querySelector('.thumbnail-link-btn');
+                if (btn) {
+                    btn.classList.add('linking');
+                    btn.title = '等待选择第二张图…';
+                }
+            }
+
+            function exitLinkingMode() {
+                if (linkingMode) {
+                    linkingMode.classList.remove('linking-pending');
+                    var btn = linkingMode.querySelector('.thumbnail-link-btn');
+                    if (btn) {
+                        btn.classList.remove('linking');
+                        btn.title = '链接';
+                    }
+                }
+                linkingMode = null;
+            }
+
+            function toggleLink(el) {
+                if (!canLink(el)) return;
+                if (isThumbLinked(el)) return;
+                if (!linkingMode) {
+                    enterLinkingMode(el);
+                } else if (linkingMode === el) {
+                    exitLinkingMode();
+                } else {
+                    if (!canLink(el)) { exitLinkingMode(); return; }
+                    var elA = linkingMode;
+                    var elB = el;
+                    exitLinkingMode();
+                    doLinkThumbs(elA, elB);
+                }
+            }
+
+            function doLinkThumbs(elA, elB) {
+                var idA = getThumbId(elA);
+                var idB = getThumbId(elB);
+                if (!idA || !idB) return;
+
+                linkGroupCounter = (linkGroupCounter + 1) % LINK_COLORS.length;
+                var color = LINK_COLORS[linkGroupCounter];
+                var groupId = 'link-' + linkGroupCounter;
+
+                linkMap[idA] = idB;
+                linkMap[idB] = idA;
+
+                // 设置配对颜色边框
+                elA.style.setProperty('--link-color', color);
+                elB.style.setProperty('--link-color', color);
+                elA.setAttribute('data-link-group', groupId);
+                elB.setAttribute('data-link-group', groupId);
+                elA.classList.add('is-linked');
+                elB.classList.add('is-linked');
+
+                // 更新按钮为取消链接
+                [elA, elB].forEach(function (el) {
+                    var btn = el.querySelector('.thumbnail-link-btn');
+                    if (btn) {
+                        btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/><line x1="2" y1="2" x2="22" y2="22"/></svg>';
+                        btn.title = '取消链接';
+                    }
+                });
+
+                // 自动将两个缩略图靠拢：把 elB 移到 elA 相邻位置
+                elA.remove();
+                elB.remove();
+                var ref = elA.nextElementSibling;
+                // 找到合适插入位置（elA 之后、第一个不属于同一配对的元素之前）
+                while (ref && ref.getAttribute && ref.getAttribute('data-link-group') === groupId) {
+                    ref = ref.nextElementSibling;
+                }
+                listEl.insertBefore(elA, ref || null);
+                listEl.insertBefore(elB, ref || null);
+            }
+
+            function unlinkThumbs(el) {
+                if (gradingStarted) return;
+                var id = getThumbId(el);
+                if (!id || !linkMap[id]) return;
+                var partnerId = linkMap[id];
+                var elB = document.querySelector('[data-thumb-id="' + partnerId + '"]');
+                delete linkMap[id];
+                delete linkMap[partnerId];
+
+                [el, elB].forEach(function (item) {
+                    if (!item) return;
+                    item.classList.remove('is-linked');
+                    item.style.removeProperty('--link-color');
+                    item.removeAttribute('data-link-group');
+                    resetLinkBtn(item);
+                });
+
+                if (elB) {
+                    var all = Array.prototype.slice.call(listEl.querySelectorAll('.thumbnail-item'));
+                    all.forEach(function (t) { t.classList.remove('active'); });
+                    el.classList.add('active');
+                    selectThumb(el);
+                }
+            }
+
+            function resetLinkBtn(el) {
+                var btn = el.querySelector('.thumbnail-link-btn');
+                if (btn) {
+                    btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
+                    btn.title = '链接';
+                }
+            }
+
+            /* ========== 4页作业数据 ========== */
+            var PAGES = [
+                {
+                    src: 'assets/worksheet-preview.png',
+                    sections: [
+                        { title: '1. 我会算', questions: [
+                            { id:1,  result:'correct', student:'210+440=',  answer:'650', explanation:'竖式计算：<br>  210<br>+ 440<br>-----<br>  650<br><br>先把相同数位对齐，从个位开始逐位相加，注意进位。' },
+                            { id:2,  result:'correct', student:'123+456=',  answer:'579', explanation:'竖式计算：<br>  123<br>+ 456<br>-----<br>  579<br><br>注意百位相加时不要忘记进位。' },
+                            { id:3,  result:'wrong',   student:'850-370=',  answer:'480', explanation:'连续退位减法：<br>  850<br>- 370<br>-----<br>  480<br><br>个位0减7，向十位借1；十位4借后剩3，3减7再向百位借1。' },
+                            { id:4,  result:'correct', student:'1000-99=', answer:'901', explanation:'连续退位：<br> 1000<br>-  99<br>------<br>  901' },
+                        ]},
+                        { title: '2. 算一算，填一填', questions: [
+                            { id:1,  result:'correct', student:'360+540=',  answer:'900', explanation:'整百数相加：36+54=90，所以 360+540=900。' },
+                            { id:2,  result:'wrong',   student:'720-280=',  answer:'440', explanation:'连续退位：720-280=440。<br><br>十位不够减，向百位借1，结果应为440。' },
+                        ]},
+                        { title: '3. 将竖式补充完整', questions: [
+                            { id:1,  result:'correct', student:'□=3', answer:'3',  explanation:'竖式中□处应填 3，与减数相减得 302。' },
+                            { id:2,  result:'wrong',   student:'□=8', answer:'8',  explanation:'竖式中□处应填 8，但学生填写位置有误。' },
+                        ]},
+                        { title: '4. 在○里填">""<"或"="', questions: [
+                            { id:1,  result:'correct', student:'320+180○500 → >',  answer:'>',  explanation:'320+180=500，500<520，所以填 >。' },
+                            { id:2,  result:'wrong',   student:'750-260○810-350 → =', answer:'>', explanation:'750-260=490，810-350=460，490>460，所以应填 >。' },
+                        ]},
+                    ]
+                },
+                {
+                    src: 'assets/homework-extra-1.png',
+                    sections: [
+                        { title: '1. 读一读，连一连', questions: [
+                            { id:1,  result:'correct', student:'apple→苹果',   answer:'苹果',   explanation:'apple 意为"苹果"，词汇对应正确。' },
+                            { id:2,  result:'correct', student:'banana→香蕉',  answer:'香蕉',   explanation:'banana 意为"香蕉"，词汇对应正确。' },
+                            { id:3,  result:'wrong',   student:'cat→猫',       answer:'猫(图片)', explanation:'cat 意思是"猫"，但连线未到达正确图片位置，故判定错误。' },
+                            { id:4,  result:'correct', student:'dog→狗',       answer:'狗',    explanation:'dog 意为"狗"，词汇对应正确。' },
+                            { id:5,  result:'correct', student:'egg→鸡蛋',     answer:'鸡蛋',   explanation:'egg 意为"鸡蛋"，词汇对应正确。' },
+                        ]},
+                        { title: '2. 看图选单词', questions: [
+                            { id:1,  result:'correct', student:'orange',    answer:'orange', explanation:'图中水果为橙子，orange 表示"橙子"，选项正确。' },
+                            { id:2,  result:'wrong',   student:'apple',     answer:'orange', explanation:'图中水果为橙子，应选 orange，apple 为"苹果"，选项错误。' },
+                            { id:3,  result:'correct', student:'grape',     answer:'grape',  explanation:'图中水果为葡萄，grape 表示"葡萄"，选项正确。' },
+                        ]},
+                        { title: '3. 选词填空', questions: [
+                            { id:1,  result:'correct', student:'I like grapes.',  answer:'grapes', explanation:'根据图片（葡萄），填入 grapes。' },
+                            { id:2,  result:'wrong',   student:'<未填写>',       answer:'grapes', explanation:'根据图片应填 grapes，学生未填写。' },
+                        ]},
+                    ]
+                },
+                {
+                    src: 'assets/homework-extra-2.png',
+                    sections: [
+                        { title: '1. 补全单词', questions: [
+                            { id:1, result:'correct', student:'b-o-o-k',   answer:'book',   explanation:'b-o-o-k 拼出单词 book，意为"书"。' },
+                            { id:2, result:'wrong',   student:'pen',       answer:'pencil', explanation:'p-e-n-c-i-l 补全为 pencil，意为"铅笔"，少写 c-i-l。' },
+                            { id:3, result:'correct', student:'r-u-l-e-r', answer:'ruler',  explanation:'r-u-l-e-r 拼出单词 ruler，意为"尺子"。' },
+                        ]},
+                        { title: '2. 选出不同类的一项', questions: [
+                            { id:1, result:'correct', student:'orange', answer:'orange', explanation:'orange 是水果，cat/dog 是动物，ruler 是文具。故 orange 与其他不同类。' },
+                            { id:2, result:'wrong',   student:'cat',    answer:'fish',   explanation:'cat、dog、fish 都是动物，ruler 是文具，所以 fish 与其他不同类。' },
+                        ]},
+                        { title: '3. 根据图片写单词', questions: [
+                            { id:1, result:'correct', student:'eraser', answer:'eraser', explanation:'图片为橡皮，英文为 eraser，书写正确。' },
+                            { id:2, result:'correct', student:'crayon', answer:'crayon',  explanation:'图片为蜡笔，英文为 crayon，书写正确。' },
+                            { id:3, result:'wrong',   student:'bago',   answer:'bag',    explanation:'图片为书包，英文为 bag，少写一个 g。' },
+                        ]},
+                    ]
+                },
+                {
+                    src: 'assets/homework-extra-3.png',
+                    sections: [
+                        { title: '1. 写出对应的大小写字母', questions: [
+                            { id:1, result:'correct', student:'A',   answer:'A',  explanation:'大写字母 A 对应小写字母 a，考查大小写字母对应关系。' },
+                            { id:2, result:'wrong',   student:'b',   answer:'B',  explanation:'小写字母 b 对应大写字母 B，写成小写 b 为错误。' },
+                            { id:3, result:'correct', student:'C',   answer:'C',  explanation:'大写字母 C 对应小写字母 c，书写正确。' },
+                            { id:4, result:'correct', student:'d',   answer:'d',  explanation:'小写字母 d 对应大写字母 D，书写正确。' },
+                        ]},
+                        { title: '2. 判断图片与句子是否相符', questions: [
+                            { id:1, result:'correct', student:'T', answer:'T', explanation:'图片为一只苹果，句子"I see an apple."描述正确，打 T。' },
+                            { id:2, result:'wrong',   student:'F', answer:'T', explanation:'图片为两支铅笔，句子"I see a ruler."描述不符，应打 T。' },
+                        ]},
+                        { title: '3. 画一画', questions: [
+                            { id:1, result:'correct', student:'（已画）', answer:'正确', explanation:'按要求画出了图形，位置和颜色均符合题目要求。' },
+                        ]},
+                    ]
+                },
+            ];
+
+            var currentPageIdx = 0;
+
+            /* ========== 右侧面板渲染 ========== */
+            function renderQuestionPanel(pageIdx) {
+                var page = PAGES[pageIdx];
+                var tabsEl = document.getElementById('question-tabs');
+                var gridEl = document.getElementById('question-grid');
+                tabsEl.innerHTML = '';
+                page.sections.forEach(function (sec, si) {
+                    var span = document.createElement('span');
+                    span.className = 'question-tab' + (si === 0 ? ' is-active' : '');
+                    span.textContent = sec.title;
+                    span.addEventListener('click', function () { renderSection(si); });
+                    tabsEl.appendChild(span);
+                });
+                renderSection(0);
+            }
+
+            function renderSection(sectionIdx) {
+                var sec = PAGES[currentPageIdx].sections[sectionIdx];
+                var tabsEl = document.getElementById('question-tabs');
+                var gridEl = document.getElementById('question-grid');
+                Array.prototype.slice.call(tabsEl.children).forEach(function (tab, i) {
+                    tab.classList.toggle('is-active', i === sectionIdx);
+                });
+                gridEl.innerHTML = '';
+                sec.questions.forEach(function (q, qi) {
+                    var badge = document.createElement('div');
+                    badge.className = 'question-badge ' + q.result;
+                    if (qi === 0) badge.classList.add('current');
+                    badge.textContent = q.id;
+                    badge.addEventListener('click', function () {
+                        Array.prototype.slice.call(gridEl.children).forEach(function (b) { b.classList.remove('current'); });
+                        badge.classList.add('current');
+                        renderDetail(q);
+                    });
+                    gridEl.appendChild(badge);
+                });
+                renderDetail(sec.questions[0]);
+            }
+
+            function renderDetail(q) {
+                document.getElementById('recog-question').textContent = q.answer + ' = ?';
+                document.getElementById('recog-answer').textContent = q.student;
+                var resultEl = document.getElementById('recog-result');
+                if (q.result === 'correct') {
+                    resultEl.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>正确<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>';
+                    resultEl.style.background = '#f6ffed';
+                    resultEl.style.borderColor = 'var(--success-green)';
+                    resultEl.style.color = 'var(--success-green)';
+                } else {
+                    resultEl.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>错误<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>';
+                    resultEl.style.background = '#fff2f0';
+                    resultEl.style.borderColor = 'var(--error-red)';
+                    resultEl.style.color = 'var(--error-red)';
+                }
+                document.getElementById('ai-answer').textContent = q.answer;
+                document.getElementById('ai-explanation').innerHTML = q.explanation;
+
+                // 批改操作按钮：直接修改 q.result（同一引用，多处自动同步）
+                var btnCorrect = document.getElementById('btn-mark-correct');
+                var btnWrong   = document.getElementById('btn-mark-wrong');
+                if (btnCorrect) {
+                    btnCorrect.onclick = function () {
+                        q.result = 'correct';
+                        refreshCurrentQuestion(q);
+                    };
+                }
+                if (btnWrong) {
+                    btnWrong.onclick = function () {
+                        q.result = 'wrong';
+                        refreshCurrentQuestion(q);
+                    };
+                }
+            }
+
+            function refreshCurrentQuestion(q) {
+                // 刷新 badge 颜色
+                var gridEl = document.getElementById('question-grid');
+                if (gridEl) {
+                    Array.prototype.slice.call(gridEl.children).forEach(function (badge) {
+                        var txt = badge.textContent.trim();
+                        if (txt == q.id) {
+                            badge.className = 'question-badge ' + q.result;
+                        }
+                    });
+                }
+                // 刷新识别结果区
+                var resultEl = document.getElementById('recog-result');
+                if (!resultEl) return;
+                if (q.result === 'correct') {
+                    resultEl.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>正确<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>';
+                    resultEl.style.background = '#f6ffed';
+                    resultEl.style.borderColor = 'var(--success-green)';
+                    resultEl.style.color = 'var(--success-green)';
+                } else {
+                    resultEl.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>错误<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>';
+                    resultEl.style.background = '#fff2f0';
+                    resultEl.style.borderColor = 'var(--error-red)';
+                    resultEl.style.color = 'var(--error-red)';
+                }
+            }
+
+            /* ========== 链接模式：合并两页题目，共用批改数据 ========== */
+            var linkedGradingMap = {}; // 链接配对 key -> unified questions 数组
+
+            function getLinkedKey(pageIdxA, pageIdxB) {
+                return Math.min(pageIdxA, pageIdxB) + '_' + Math.max(pageIdxA, pageIdxB);
+            }
+
+            function buildLinkedQuestions(pageIdxA, pageIdxB) {
+                var pageA = PAGES[pageIdxA];
+                var pageB = PAGES[pageIdxB];
+                if (!pageA) return [];
+
+                // 两页 sections 拼接，全部题目扁平化
+                var aSections = pageA.sections || [];
+                var bSections = (pageB && pageB.sections) ? pageB.sections : [];
+
+                var questions = [];
+                aSections.forEach(function (sec) {
+                    sec.questions.forEach(function (q) { questions.push(q); });
+                });
+                bSections.forEach(function (sec) {
+                    sec.questions.forEach(function (q) { questions.push(q); });
+                });
+                return questions;
+            }
+
+            function renderQuestionPanelWithLink(pageIdxA, pageIdxB) {
+                var tabsEl = document.getElementById('question-tabs');
+                var gridEl = document.getElementById('question-grid');
+                tabsEl.innerHTML = '';
+                gridEl.innerHTML = '';
+
+                var pageA = PAGES[pageIdxA];
+                var pageB = PAGES[pageIdxB];
+                var aCount = (pageA && pageA.sections) ? pageA.sections.length : 0;
+                var bCount = (pageB && pageB.sections) ? pageB.sections.length : 0;
+
+                // 建立链接配对的统一题目列表
+                var key = getLinkedKey(pageIdxA, pageIdxB);
+                if (!linkedGradingMap[key]) {
+                    linkedGradingMap[key] = buildLinkedQuestions(pageIdxA, pageIdxB);
+                }
+                var allQuestions = linkedGradingMap[key];
+
+                // 显示一个"综合批改"标签页
+                var span = document.createElement('span');
+                span.className = 'question-tab is-active';
+                span.textContent = '综合批改 [' + aCount + '+' + bCount + ' 大题]';
+                tabsEl.appendChild(span);
+
+                renderLinkedQuestions(key, allQuestions);
+            }
+
+            function renderLinkedQuestions(linkKey, questions) {
+                var gridEl = document.getElementById('question-grid');
+                gridEl.innerHTML = '';
+                questions.forEach(function (q, qi) {
+                    var badge = document.createElement('div');
+                    updateBadgeClass(badge, q.result);
+                    if (qi === 0) badge.classList.add('current');
+                    badge.textContent = q.id;
+                    badge.addEventListener('click', function () {
+                        Array.prototype.slice.call(gridEl.children).forEach(function (b) { b.classList.remove('current'); });
+                        badge.classList.add('current');
+                        renderDetail(q);
+                    });
+                    gridEl.appendChild(badge);
+                });
+                if (questions.length > 0) renderDetail(questions[0]);
+            }
+
+            // 统一 badge 样式（current / correct / wrong）
+            function updateBadgeClass(badge, result) {
+                badge.className = 'question-badge ' + result;
+            }
+
+            function syncLinkedResults(q) {
+                // 将该题同步到所有 linkedGradingMap 条目中（同一对象引用）
+                for (var key in linkedGradingMap) {
+                    var arr = linkedGradingMap[key];
+                    for (var i = 0; i < arr.length; i++) {
+                        if (arr[i] === q) return; // 同一引用，无需同步
+                    }
+                }
+            }
+
+            function renderSectionWithLink(sectionIdx) {
+                var pageA = PAGES[currentPageIdx];
+                var linkedThumb = getLinkPartner(listEl.querySelector('.thumbnail-item.active'));
+                var pageB = null;
+                if (linkedThumb) {
+                    var linkedPageIdx = parseInt(linkedThumb.getAttribute('data-page-idx'), 10);
+                    if (!isNaN(linkedPageIdx) && linkedPageIdx >= 0 && linkedPageIdx < PAGES.length) {
+                        pageB = PAGES[linkedPageIdx];
+                    }
+                }
+                var allSections = pageA.sections.concat(pageB ? pageB.sections : []);
+                var sec = allSections[sectionIdx];
+
+                var tabsEl = document.getElementById('question-tabs');
+                var gridEl = document.getElementById('question-grid');
+                Array.prototype.slice.call(tabsEl.children).forEach(function (tab, i) {
+                    tab.classList.toggle('is-active', i === sectionIdx);
+                });
+
+                gridEl.innerHTML = '';
+                sec.questions.forEach(function (q, qi) {
+                    var badge = document.createElement('div');
+                    badge.className = 'question-badge ' + q.result;
+                    if (qi === 0) badge.classList.add('current');
+                    badge.textContent = q.id;
+                    badge.addEventListener('click', function () {
+                        Array.prototype.slice.call(gridEl.children).forEach(function (b) { b.classList.remove('current'); });
+                        badge.classList.add('current');
+                        renderDetail(q);
+                    });
+                    gridEl.appendChild(badge);
+                });
+                renderDetail(sec.questions[0]);
+            }
+
+            /* ========== 选中缩略图 ========== */
+            function selectThumb(item) {
+                if (!item) return;
+                var all = listEl.querySelectorAll('.thumbnail-item');
+                for (var i = 0; i < all.length; i++) all[i].classList.remove('active');
+                item.classList.add('active');
+
+                var linked = getLinkPartner(item);
+
+                // 如果有关联图，同时高亮关联图（蓝色边框）
+                if (linked) linked.classList.add('active');
+
+                // 预览区始终显示当前选中图（大图不并排）
+                var src = item.getAttribute('data-src') || (item.querySelector('img') || 0).src;
+                if (mainImg) {
+                    mainImg.style.display = '';
+                    var existing = document.getElementById('main-preview-multi');
+                    if (existing) existing.remove();
+                    if (src) mainImg.setAttribute('src', src);
+                }
+
+                // 找到当前缩略图对应的 page index（通过 data-page-idx，不受排序影响）
+                var pageIdx = parseInt(item.getAttribute('data-page-idx'), 10);
+                if (isNaN(pageIdx) || pageIdx < 0 || pageIdx >= PAGES.length) pageIdx = 0;
+                currentPageIdx = pageIdx;
+
+                if (linked) {
+                    var linkedPageIdx = parseInt(linked.getAttribute('data-page-idx'), 10);
+                    if (isNaN(linkedPageIdx) || linkedPageIdx < 0 || linkedPageIdx >= PAGES.length) linkedPageIdx = pageIdx;
+                    renderQuestionPanelWithLink(pageIdx, linkedPageIdx);
+                } else {
+                    renderQuestionPanel(pageIdx);
+                }
+            }
+
+            function deleteThumb(item) {
+                var wasActive = item.classList.contains('active');
+                var nextItem = item.nextElementSibling || item.previousElementSibling;
+                item.remove();
+                if (wasActive) {
+                    if (nextItem) selectThumb(nextItem);
+                    else if (mainImg) mainImg.removeAttribute('src');
+                }
+            }
+
+            /* ========== 拖拽排序 ========== */
+            function getDragSibling(e) {
+                var siblings = Array.prototype.slice.call(
+                    listEl.querySelectorAll('.thumbnail-item:not(.dragging)')
+                );
+                return siblings.reduce(function (best, s) {
+                    var r = s.getBoundingClientRect();
+                    var mid = r.left + r.width / 2;
+                    return (e.clientX < mid) ? best : s;
+                }, siblings[siblings.length - 1]);
+            }
+
+            function attachDragEvents(item) {
+                item.setAttribute('draggable', 'true');
+                item.addEventListener('dragstart', function (e) {
+                    draggedEl = item;
+                    item.classList.add('dragging');
+                    e.dataTransfer.setData('text/plain', '');
+                    e.dataTransfer.effectAllowed = 'move';
+                });
+                item.addEventListener('dragend', function () {
+                    item.classList.remove('dragging');
+                    listEl.querySelectorAll('.drag-over').forEach(function (el) { el.classList.remove('drag-over'); });
+                    draggedEl = null;
+                });
+            }
+
+            function initSortable() {
+                listEl.addEventListener('dragover', function (e) {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    var over = e.target.closest && e.target.closest('.thumbnail-item');
+                    if (over && over !== draggedEl) {
+                        listEl.querySelectorAll('.drag-over').forEach(function (el) { el.classList.remove('drag-over'); });
+                        over.classList.add('drag-over');
+                    }
+                });
+                listEl.addEventListener('dragleave', function (e) {
+                    if (!listEl.contains(e.relatedTarget)) {
+                        listEl.querySelectorAll('.drag-over').forEach(function (el) { el.classList.remove('drag-over'); });
+                    }
+                });
+                listEl.addEventListener('drop', function (e) {
+                    e.preventDefault();
+                    if (!draggedEl) return;
+                    var sibling = getDragSibling(e);
+                    if (sibling && sibling !== draggedEl) {
+                        var sRect = sibling.getBoundingClientRect();
+                        if (e.clientY < sRect.top + sRect.height / 2) listEl.insertBefore(draggedEl, sibling);
+                        else listEl.insertBefore(draggedEl, sibling.nextSibling);
+                    }
+                    listEl.querySelectorAll('.drag-over').forEach(function (el) { el.classList.remove('drag-over'); });
+                });
+            }
+
+            function onListClick(e) {
+                var del  = e.target.closest('.delete-btn');
+                var link = e.target.closest('.thumbnail-link-btn');
+                var item = e.target.closest('.thumbnail-item');
+                if (del && item) { e.stopPropagation(); deleteThumb(item); return; }
+                if (link && item) {
+                    e.stopPropagation();
+                    if (isThumbLinked(item)) {
+                        unlinkThumbs(item);
+                    } else {
+                        toggleLink(item);
+                    }
+                    return;
+                }
+                if (item) selectThumb(item);
+            }
+
+            function addDemoThumbnails() {
+                if (demoExtrasAdded) return;
+                demoExtrasAdded = true;
+                EXTRA_SRC.forEach(function (src, i) {
+                    var div = document.createElement('div');
+                    div.className = 'thumbnail-item';
+                    div.setAttribute('data-src', src);
+                    div.setAttribute('data-thumb-id', 'thumb-' + (i + 1));
+                    div.setAttribute('data-page-idx', i + 1);
+                    div.innerHTML =
+                        '<img src="' + src + '" alt="作业">' +
+                        '<button class="thumbnail-link-btn" title="链接" aria-label="链接">' +
+                        '<svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>' +
+                        '</button>' +
+                        '<span class="delete-btn" role="button" tabindex="0" aria-label="删除">×</span>';
+                    listEl.appendChild(div);
+                    attachDragEvents(div);
+                });
+            }
+
+            function initExistingThumbs() {
+                listEl.querySelectorAll('.thumbnail-item').forEach(function (el, i) {
+                    var im = el.querySelector('img');
+                    if (!el.getAttribute('data-thumb-id')) {
+                        el.setAttribute('data-thumb-id', 'thumb-' + i);
+                    }
+                    if (!el.getAttribute('data-page-idx')) {
+                        el.setAttribute('data-page-idx', i < PAGES.length ? i : 0);
+                    }
+                    if (!el.getAttribute('data-src') && im) el.setAttribute('data-src', im.getAttribute('src'));
+                    attachDragEvents(el);
+                });
+                // 批改内容由 startGrading() 触发，不再此处渲染
+            }
+
+            if (btnLocal)  btnLocal.addEventListener('click', addDemoThumbnails);
+            if (btnMobile) btnMobile.addEventListener('click', addDemoThumbnails);
+
+            var btnStart = document.getElementById('btn-start-grading');
+            if (btnStart) btnStart.addEventListener('click', startGrading);
+
+            if (listEl) {
+                listEl.addEventListener('click', onListClick);
+                initSortable();
+                initExistingThumbs();
+            }
+        })();
+    </script>
+</body>
+</html>
