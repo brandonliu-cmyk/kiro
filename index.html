@@ -355,10 +355,19 @@
             min-width: 0;
         }
 
-        .thumbnail-list {
+        .thumbnail-list-container {
             flex: 0 0 149px;
             width: 149px;
             background: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            border-right: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .thumbnail-list {
+            flex: 1;
             padding: 12px 10px;
             display: flex;
             flex-direction: column;
@@ -366,10 +375,89 @@
             gap: 10px;
             overflow-y: auto;
             overflow-x: hidden;
-            border-right: 1px solid var(--border-color);
+            scroll-behavior: smooth;
+        }
+
+        /* Hide scrollbar for thumbnail list */
+        .thumbnail-list::-webkit-scrollbar {
+            display: none;
+        }
+        .thumbnail-list {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Scroll Buttons */
+        .scroll-btn {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            transition: all 0.2s;
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .scroll-btn:hover {
+            color: var(--primary-blue);
+            border-color: var(--primary-blue);
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(24,144,255,0.2);
+        }
+
+        .scroll-btn svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .scroll-btn.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .scroll-up {
+            top: 8px;
+        }
+
+        .scroll-btn-group-bottom {
+            position: absolute;
+            bottom: 8px;
+            left: 0;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            pointer-events: none; /* Let clicks pass through container */
+            z-index: 10;
+        }
+
+        .scroll-btn-group-bottom .scroll-btn.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .scroll-btn-group-bottom .scroll-btn {
+            position: relative;
+            left: auto;
+            transform: none;
+            bottom: auto;
+            pointer-events: auto; /* Re-enable clicks on buttons */
         }
 
         .thumbnail-item {
+            flex: 0 0 auto;
             width: 125px;
             height: 185px;
             background: #fff;
@@ -425,12 +513,25 @@
             color: #fff;
             font-size: 12px;
             cursor: pointer;
-            opacity: 0;
+            opacity: 1;
             transition: opacity 0.2s;
+            z-index: 10;
         }
 
-        .thumbnail-item:hover .delete-btn {
-            opacity: 1;
+        .thumbnail-score-badge {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.6);
+            color: #fff;
+            font-size: 12px;
+            text-align: center;
+            padding: 4px 0;
+            z-index: 5;
+        }
+        .thumbnail-score-badge.ungraded {
+            background: rgba(153, 153, 153, 0.8);
         }
 
         .main-preview {
@@ -442,6 +543,12 @@
             justify-content: center;
             background: #fafafa;
             overflow: auto;
+            position: relative; /* 添加相对定位，用于放置批改痕迹 */
+        }
+
+        .main-preview-container {
+            position: relative;
+            display: inline-block;
         }
 
         .main-preview img {
@@ -450,6 +557,25 @@
             object-fit: contain;
             border-radius: 4px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            display: block; /* 移除底部空白 */
+        }
+
+        .grading-mark {
+            position: absolute;
+            pointer-events: none;
+            width: 24px;
+            height: 24px;
+            transform: translate(-50%, -50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        .grading-mark.correct {
+            color: var(--success-green);
+        }
+        .grading-mark.wrong {
+            color: var(--error-red);
         }
 
         /* Right Column */
@@ -681,47 +807,69 @@
         ::-webkit-scrollbar-thumb { background: #d9d9d9; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #bfbfbf; }
 
-        /* Thumbnail Link Button */
-        .thumbnail-link-btn {
+        /* Thumbnail Actions */
+        .thumbnail-actions {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+            display: flex;
+            gap: 12px;
+            z-index: 10;
+            pointer-events: none; /* 让容器不阻挡点击 */
+        }
+
+        .thumbnail-actions button {
+            pointer-events: auto; /* 让按钮恢复点击响应 */
+        }
+
+        /* 批改进行中，隐藏所有链接按钮（禁止新建和取消链接） */
+        body.grading-started .thumbnail-actions {
+            display: none !important;
+        }
+
+        .thumbnail-link-btn, .thumbnail-unlink-btn {
             width: 36px;
             height: 36px;
             background: rgba(255, 255, 255, 0.92);
             border: 2px solid #ccc;
             border-radius: 50%;
-            display: none;
+            display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            z-index: 10;
             transition: all 0.2s;
             backdrop-filter: blur(2px);
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
 
-        .thumbnail-item:hover .thumbnail-link-btn {
-            display: inline-flex;
+        .thumbnail-unlink-btn {
+            display: none; /* 默认隐藏，只有已链接的图片才显示 */
         }
 
-        /* 批改进行中，隐藏所有链接按钮（禁止新建和取消链接） */
-        body.grading-started .thumbnail-link-btn {
-            display: none !important;
+        .thumbnail-item.is-linked .thumbnail-unlink-btn {
+            display: flex;
+        }
+
+        .thumbnail-link-btn:hover, .thumbnail-unlink-btn:hover {
+            transform: scale(1.1);
         }
 
         .thumbnail-link-btn:hover {
             background: var(--primary-blue);
             border-color: var(--primary-blue);
-            transform: translate(-50%, -50%) scale(1.1);
         }
 
-        .thumbnail-link-btn:hover svg {
+        .thumbnail-unlink-btn:hover {
+            background: var(--error-red);
+            border-color: var(--error-red);
+        }
+
+        .thumbnail-link-btn:hover svg, .thumbnail-unlink-btn:hover svg {
             stroke: #fff;
         }
 
-        .thumbnail-link-btn svg {
+        .thumbnail-link-btn svg, .thumbnail-unlink-btn svg {
             width: 16px;
             height: 16px;
             stroke: #888;
@@ -747,6 +895,22 @@
             z-index: 11;
         }
 
+        /* 打组标签样式 */
+        .link-group-badge {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            background: var(--link-color, #FF9800);
+            color: #fff;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 2px 6px;
+            border-radius: 4px;
+            z-index: 11;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            pointer-events: none;
+        }
+
         /* 链接模式：等待配对状态 */
         @keyframes linking-pulse {
             0%, 100% { box-shadow: 0 0 0 0 rgba(24, 144, 255, 0.4); }
@@ -758,15 +922,564 @@
             animation: linking-pulse 1.2s ease-in-out infinite;
         }
 
+        .thumbnail-item.linking-pending .thumbnail-actions {
+            display: flex;
+        }
+
         .thumbnail-item.linking-pending .thumbnail-link-btn {
-            display: inline-flex;
             background: var(--primary-blue);
             border-color: var(--primary-blue);
-            transform: translate(-50%, -50%) scale(1.1);
+            transform: scale(1.1);
         }
 
         .thumbnail-item.linking-pending .thumbnail-link-btn svg {
             stroke: #fff;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.45);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.2s, visibility 0.2s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-container {
+            background: #f2f3f8; /* Match screenshot light background */
+            width: 720px;
+            border-radius: 12px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            transform: scale(0.95);
+            transition: transform 0.2s;
+            padding: 24px;
+        }
+
+        .modal-overlay.active .modal-container {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .modal-close {
+            background: transparent;
+            border: none;
+            font-size: 20px;
+            color: var(--text-secondary);
+            cursor: pointer;
+            line-height: 1;
+            padding: 4px;
+        }
+
+        .modal-close:hover {
+            color: var(--text-dark);
+        }
+
+        .modal-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+
+        .upload-alert {
+            background-color: #e6f4ff;
+            border: 1px solid #91caff;
+            border-radius: 6px;
+            padding: 8px 12px;
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .upload-alert svg {
+            color: var(--primary-blue);
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .upload-alert span {
+            font-size: 13px;
+            color: var(--text-dark);
+            line-height: 1.5;
+        }
+
+        .upload-card {
+            background: #fff;
+            border: 1px solid #e1e8f0;
+            border-radius: 8px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+            transition: border-color 0.2s, box-shadow 0.2s;
+            overflow: hidden;
+        }
+
+        .upload-card:hover {
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 8px rgba(24, 144, 255, 0.1);
+        }
+
+        .upload-dragger {
+            padding: 48px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: padding 0.2s;
+        }
+
+        .upload-card.has-files .upload-dragger {
+            padding: 24px 20px;
+        }
+
+        .upload-icon {
+            color: var(--primary-blue);
+            margin-bottom: 12px;
+            display: inline-flex;
+        }
+
+        .upload-text {
+            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+
+        .upload-hint {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        /* Preview Section Styles */
+        .upload-preview-section {
+            padding: 0 24px 24px;
+            border-top: 1px solid #f0f0f0;
+            margin-top: -8px;
+        }
+
+        .upload-preview-count {
+            font-size: 14px;
+            color: var(--text-dark);
+            margin-bottom: 16px;
+            margin-top: 16px;
+        }
+
+        .upload-preview-list {
+            display: flex;
+            gap: 16px;
+            overflow-x: auto;
+            padding-bottom: 12px;
+            scroll-behavior: smooth;
+        }
+
+        .upload-preview-list::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .upload-preview-list::-webkit-scrollbar-thumb {
+            background: #d9d9d9;
+            border-radius: 3px;
+        }
+
+        .upload-preview-list::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .preview-item {
+            flex: 0 0 110px;
+            width: 110px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px;
+            position: relative;
+            background: #f9fbfd;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .preview-img-wrap {
+            width: 100%;
+            height: 100px;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 8px;
+            background: #fff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .preview-img-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .preview-filename {
+            font-size: 12px;
+            color: var(--text-dark);
+            text-align: center;
+            width: 100%;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .preview-delete {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            width: 20px;
+            height: 20px;
+            background: #666;
+            color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+            border: 2px solid #fff;
+            z-index: 2;
+            transition: background 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .preview-delete:hover {
+            background: #ff4d4f;
+        }
+
+        .match-section {
+            margin-bottom: 24px;
+        }
+
+        .match-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 12px;
+        }
+
+        .match-options {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 12px;
+        }
+
+        .radio-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--text-dark);
+            cursor: pointer;
+        }
+
+        .radio-input {
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border: 1px solid var(--primary-blue);
+            border-radius: 50%;
+            outline: none;
+            cursor: pointer;
+            position: relative;
+            background: #fff;
+            margin: 0;
+        }
+
+        .radio-input:checked {
+            border-width: 5px;
+        }
+
+        .radio-input:not(:checked) {
+            border-color: #d9d9d9;
+        }
+
+        .match-tips {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .match-tips li {
+            font-size: 13px;
+            color: #8c8c8c;
+            line-height: 1.8;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+
+        .btn-upload {
+            background: var(--primary-blue);
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            padding: 8px 24px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .btn-upload:disabled {
+            background: #bce0ff;
+            cursor: not-allowed;
+        }
+
+        .btn-cancel {
+            background: transparent;
+            color: var(--text-secondary);
+            border: none;
+            cursor: pointer;
+            padding: 8px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .btn-cancel:hover {
+            color: var(--text-dark);
+            background: rgba(0,0,0,0.05);
+        }
+
+        /* Match Modal Styles */
+        .match-modal-container {
+            width: 800px;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .match-header-stats {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .match-header-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .match-status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 16px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .match-status-badge.success {
+            background: #f6ffed;
+            color: var(--success-green);
+        }
+
+        .match-status-badge.warning {
+            background: #fffbe6;
+            color: var(--warning-orange);
+        }
+
+        .match-table-container {
+            flex: 1;
+            overflow-y: auto;
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        .match-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+        }
+
+        .match-table th {
+            background: #fafafa;
+            padding: 12px 16px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        .match-table td {
+            padding: 12px 16px;
+            font-size: 14px;
+            color: var(--text-dark);
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        .match-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .student-select-wrap {
+            position: relative;
+            width: 200px;
+        }
+
+        .student-select {
+            width: 100%;
+            appearance: none;
+            padding: 8px 32px 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            color: var(--text-dark);
+            background: #f0f7fc;
+            outline: none;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+
+        .student-select:focus, .student-select:hover {
+            border-color: var(--primary-blue);
+        }
+
+        .student-select-wrap::after {
+            content: '';
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 5px solid var(--text-secondary);
+            pointer-events: none;
+        }
+
+        .matched-student-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .matched-student-name {
+            font-weight: 500;
+            color: var(--text-dark);
+        }
+
+        .matched-student-id {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .row-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .row-status.success {
+            background: #e6f4ff;
+            color: var(--primary-blue);
+            border: 1px solid #91caff;
+        }
+
+        .row-status.warning {
+            background: #fffbe6;
+            color: var(--warning-orange);
+        }
+
+        /* Toast Notification Styles */
+        .toast-container {
+            position: fixed;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            pointer-events: none;
+        }
+
+        .toast-message {
+            background: #fff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            border-radius: 8px;
+            padding: 10px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: var(--text-dark);
+            animation: toast-slide-down 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+            pointer-events: auto;
+        }
+
+        .toast-message.toast-fade-out {
+            animation: toast-fade-out 0.3s ease-in forwards;
+        }
+
+        .toast-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+        }
+
+        .toast-icon.success {
+            color: var(--success-green);
+        }
+        
+        .toast-icon.info {
+            color: var(--primary-blue);
+        }
+
+        @keyframes toast-slide-down {
+            from { transform: translateY(-100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes toast-fade-out {
+            from { transform: translateY(0); opacity: 1; }
+            to { transform: translateY(-20px); opacity: 0; }
         }
     </style>
 </head>
@@ -817,13 +1530,13 @@
             </div>
         </div>
         <div class="sub-header-right">
-            <button class="btn btn-disabled">
+            <button class="btn btn-primary" id="btn-start-all-grading">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <polygon points="5 3 19 12 5 21 5 3"/>
                 </svg>
                 全部开始批改
             </button>
-            <button class="btn btn-primary">
+            <button class="btn btn-primary" id="btn-batch-upload">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                     <polyline points="17 8 12 3 7 8"/>
@@ -861,7 +1574,7 @@
                         <div class="student-name">李1</div>
                         <div class="student-id">20250022</div>
                     </div>
-                    <div class="student-score">97</div>
+                    <div class="student-status">未批改</div>
                 </div>
 
                 <div class="student-card">
@@ -870,7 +1583,7 @@
                         <div class="student-name">李2</div>
                         <div class="student-id">20250023</div>
                     </div>
-                    <div class="student-score">84</div>
+                    <div class="student-status">未批改</div>
                 </div>
 
                 <div class="student-card">
@@ -912,20 +1625,44 @@
             </div>
 
             <div class="image-panel">
-                <!-- Thumbnail List -->
-                <div class="thumbnail-list" id="thumbnail-list">
-                    <div class="thumbnail-item active" data-src="assets/worksheet-preview.png" data-thumb-id="thumb-0" data-page-idx="0">
-                        <img src="assets/worksheet-preview.png" alt="作业 1">
-                        <button class="thumbnail-link-btn" title="链接" aria-label="链接">
-                            <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                <!-- Thumbnail List Container with Scroll Buttons -->
+                <div class="thumbnail-list-container">
+                    <button class="scroll-btn scroll-up" id="btn-scroll-up" aria-label="向上滚动">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                    </button>
+                    
+                    <div class="thumbnail-list" id="thumbnail-list">
+                        <div class="thumbnail-item active" data-src="assets/worksheet-preview.png" data-thumb-id="thumb-0" data-page-idx="0">
+                            <img src="assets/worksheet-preview.png" alt="作业 1">
+                            <div class="thumbnail-score-badge ungraded">未批改</div>
+                            <div class="thumbnail-actions">
+                                <button class="thumbnail-link-btn" title="链接" aria-label="链接">
+                                    <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                                </button>
+                                <button class="thumbnail-unlink-btn" title="取消链接" aria-label="取消链接">
+                                    <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+                                </button>
+                            </div>
+                            <span class="delete-btn" role="button" tabindex="0" aria-label="删除">×</span>
+                        </div>
+                    </div>
+
+                    <div class="scroll-btn-group-bottom">
+                        <button class="scroll-btn scroll-down" id="btn-scroll-down" aria-label="向下滚动">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
                         </button>
-                        <span class="delete-btn" role="button" tabindex="0" aria-label="删除">×</span>
+                        <button class="scroll-btn scroll-top" id="btn-scroll-top" aria-label="回到顶部" title="回到顶部">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="18 15 12 9 6 15"></polyline><line x1="18" y1="5" x2="6" y2="5"></line></svg>
+                        </button>
                     </div>
                 </div>
 
                 <!-- Main Preview -->
-                <div class="main-preview">
-                    <img id="main-preview-img" src="assets/worksheet-preview.png" alt="作业预览">
+                <div class="main-preview" id="main-preview-area">
+                    <div class="main-preview-container" id="main-preview-container">
+                        <img id="main-preview-img" src="assets/worksheet-preview.png" alt="作业预览">
+                        <!-- 批改痕迹将动态插入到这里 -->
+                    </div>
                 </div>
             </div>
         </section>
@@ -983,13 +1720,14 @@
                     <span class="recognition-label">识别题目:</span>
                     <span class="recognition-value" id="recog-question">—</span>
                 </div>
-                <div class="recognition-row">
+                <div class="recognition-row" style="display: flex; align-items: center;">
                     <span class="recognition-label">学生答案:</span>
                     <span class="recognition-value" id="recog-answer">—</span>
                     <span class="result-badge" id="recog-result">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
                         正确
                     </span>
+                    <button class="btn btn-outline" style="padding: 2px 8px; font-size: 12px; height: 24px; margin-left: auto;">修改</button>
                 </div>
             </div>
 
@@ -1001,21 +1739,123 @@
                     </div>
                     <div class="explanation-title">详细解题思路</div>
                     <div class="explanation-content" id="ai-explanation">点击左侧题目编号查看详细解题思路。</div>
-                    <!-- 单题批改按钮 -->
-                    <div class="grading-actions" style="margin-top:14px;display:flex;gap:8px;">
-                        <button type="button" class="btn btn-secondary" id="btn-mark-correct" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 12px;font-size:13px;">
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                            标记正确
-                        </button>
-                        <button type="button" class="btn btn-secondary" id="btn-mark-wrong" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 12px;font-size:13px;">
-                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                            标记错误
-                        </button>
-                    </div>
                 </div>
             </div><!-- /grading-panel -->
         </aside>
     </main>
+
+    <!-- Global Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Batch Upload Modal -->
+    <div class="modal-overlay" id="batch-upload-modal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <div class="modal-title">批量上传作业</div>
+                <button class="modal-close" id="btn-close-modal" aria-label="关闭">&times;</button>
+            </div>
+            <div class="modal-subtitle">批量上传学生作业图片，系统会根据图片名称匹配学生。</div>
+
+            <div class="upload-alert">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+                <span>系统会自动根据学生每份作业是否存在跨页的情况进行自动匹配，将跨页的题目能够一起打组批改。</span>
+            </div>
+
+            <div class="upload-card" id="upload-card">
+                <div class="upload-dragger" id="upload-dragger">
+                    <div class="upload-icon">
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17.5 19C19.985 19 22 16.985 22 14.5C22 12.138 20.185 10.215 17.882 10.024C17.388 6.621 14.484 4 11 4C7.134 4 4 7.134 4 11C4 11.233 4.011 11.463 4.033 11.69C1.782 12.083 0 14.075 0 16.5C0 19.538 2.462 22 5.5 22H17.5V19Z" fill="#e6f7ff" stroke="none"/>
+                            <path d="M17.5 19C19.985 19 22 16.985 22 14.5C22 12.138 20.185 10.215 17.882 10.024C17.388 6.621 14.484 4 11 4C7.134 4 4 7.134 4 11C4 11.233 4.011 11.463 4.033 11.69C1.782 12.083 0 14.075 0 16.5C0 19.538 2.462 22 5.5 22H17.5" stroke="#1890ff" stroke-width="2"/>
+                            <path d="M11 18V10M8 13L11 10L14 13" stroke="#1890ff" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <div class="upload-text">点击上传</div>
+                    <div class="upload-hint">支持 JPG, PNG, PDF 格式（支持批量上传）</div>
+                    <!-- Hidden file input for real upload action -->
+                    <input type="file" id="batch-file-input" multiple accept=".jpg,.jpeg,.png,.pdf" style="display:none">
+                </div>
+
+                <!-- Preview Area (Hidden by default) -->
+                <div class="upload-preview-section" id="upload-preview-section" style="display: none;">
+                    <div class="upload-preview-count" id="upload-preview-count">已选择 0 个文件</div>
+                    <div class="upload-preview-list" id="upload-preview-list">
+                        <!-- Preview items will be injected here -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="match-section">
+                <div class="match-title">作业匹配方式</div>
+                <div class="match-options">
+                    <label class="radio-label">
+                        <input type="radio" name="match-type" class="radio-input" value="filename" checked>
+                        按文件名称匹配
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="match-type" class="radio-input" value="ai">
+                        AI识别匹配
+                    </label>
+                </div>
+                <ul class="match-tips" id="match-tips-list">
+                    <li>文件名需包含学生姓名+学号，如“张三-2503232”，同一学生多张作业在图片后面加 1、2、3。</li>
+                    <li>建议上传清晰无阴影、文字清晰的图片。</li>
+                    <li>上传中请保持页面稳定，文档齐全。</li>
+                </ul>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-cancel" id="btn-cancel-modal">取消</button>
+                <button class="btn-upload" id="btn-start-upload">开始上传</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="batch-match-modal">
+        <div class="modal-container match-modal-container">
+            <div class="modal-header">
+                <div class="modal-title">作业匹配</div>
+                <button class="modal-close" id="btn-close-match-modal" aria-label="关闭">&times;</button>
+            </div>
+            <div class="modal-subtitle">系统会根据文件名匹配学生姓名或学号，未匹配的作业请手动选择学生。</div>
+            
+            <div class="match-header-stats">
+                <div class="match-header-title">匹配结果（<span id="match-total-count">0</span>份）</div>
+                <div class="match-status-badge success">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                    已匹配 <span id="match-success-count">0</span>
+                </div>
+                <div class="match-status-badge warning">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                    待确认 <span id="match-pending-count">0</span>
+                </div>
+            </div>
+
+            <div class="match-table-container">
+                <table class="match-table">
+                    <thead>
+                        <tr>
+                            <th width="30%">文件名</th>
+                            <th width="30%">识别学生</th>
+                            <th width="15%">分组状态</th>
+                            <th width="25%" style="text-align: right;">状态</th>
+                        </tr>
+                    </thead>
+                    <tbody id="match-table-body">
+                        <!-- Table rows will be injected here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-primary" id="btn-complete-match">完成</button>
+            </div>
+        </div>
+    </div>
 
     <script>
         (function () {
@@ -1032,40 +1872,126 @@
             var btnLocal  = document.getElementById('btn-upload-local');
             var btnMobile = document.getElementById('btn-upload-mobile');
 
-            var gradingStarted = false; // 批改是否已开始
+            var gradingStarted = false; // 全局批改是否已开始（只要有批改过的即为 true）
 
             /* ========== 开始批改 ========== */
             function startGrading() {
-                if (gradingStarted) return;
-                gradingStarted = true;
-                var btn = document.getElementById('btn-start-grading');
-                if (btn) {
-                    btn.classList.remove('btn-primary');
-                    btn.classList.add('btn-disabled');
-                    btn.disabled = true;
-                }
-                // 隐藏占位提示，显示批改面板
-                var placeholder = document.getElementById('grading-placeholder');
-                if (placeholder) placeholder.style.display = 'none';
-                var panel = document.getElementById('grading-panel');
-                if (panel) panel.style.display = '';
-                document.body.classList.add('grading-started');
+                var activeItem = listEl.querySelector('.thumbnail-item.active');
+                if (!activeItem) return;
 
-                // 渲染右侧内容
-                renderQuestionPanel(0);
+                // 页面上的所有图片都要有批改数据
+                var allItems = listEl.querySelectorAll('.thumbnail-item');
+                allItems.forEach(function(item) {
+                    setThumbGraded(item, true);
+                });
+
+                gradingStarted = true;
+                
+                checkGradingStatus(activeItem);
                 updateStats();
+                updateStudentListScores();
+            }
+
+            function updateStudentListScores() {
+                var studentCards = document.querySelectorAll('.student-card');
+                studentCards.forEach(function(card, index) {
+                    var statusEl = card.querySelector('.student-status');
+                    var scoreEl = card.querySelector('.student-score');
+                    
+                    if (index === 0) {
+                        if (statusEl) {
+                            statusEl.className = 'student-score';
+                            statusEl.textContent = '97%';
+                        } else if (scoreEl) {
+                            scoreEl.textContent = '97%';
+                        }
+                    } else if (index === 1) {
+                        if (statusEl) {
+                            statusEl.className = 'student-score';
+                            statusEl.textContent = '84%';
+                        } else if (scoreEl) {
+                            scoreEl.textContent = '84%';
+                        }
+                    }
+                });
+            }
+
+            function checkGradingStatus(item) {
+                var isGraded = item && item.getAttribute('data-is-graded') === 'true';
+                var btn = document.getElementById('btn-start-grading');
+                var btnAll = document.getElementById('btn-start-all-grading');
+                var placeholder = document.getElementById('grading-placeholder');
+                var panel = document.getElementById('grading-panel');
+
+                if (isGraded) {
+                    if (btn) {
+                        btn.classList.remove('btn-primary');
+                        btn.classList.add('btn-disabled');
+                        btn.disabled = true;
+                    }
+                    if (btnAll) {
+                        btnAll.classList.remove('btn-primary');
+                        btnAll.classList.add('btn-disabled');
+                        btnAll.disabled = true;
+                    }
+                    if (placeholder) placeholder.style.display = 'none';
+                    if (panel) panel.style.display = '';
+                    document.body.classList.add('grading-started');
+
+                    // 渲染右侧内容
+                    var pageIdx = parseInt(item.getAttribute('data-page-idx'), 10) || 0;
+                    var partners = getLinkPartners(item);
+                    if (partners && partners.length > 0) {
+                        var pageIndices = [pageIdx];
+                        partners.forEach(function(p) {
+                            var pIdx = parseInt(p.getAttribute('data-page-idx'), 10);
+                            if (!isNaN(pIdx) && pIdx >= 0 && pIdx < PAGES.length) {
+                                pageIndices.push(pIdx);
+                            }
+                        });
+                        renderQuestionPanelWithLink(pageIndices);
+                        renderGradingMarks(pageIndices[0]); // 这里为了简单，只在第一张图上显示这套题目的痕迹。如果是打组，可做额外处理
+                    } else {
+                        renderQuestionPanel(pageIdx);
+                        renderGradingMarks(pageIdx);
+                    }
+                } else {
+                    if (btn) {
+                        btn.classList.remove('btn-disabled');
+                        btn.classList.add('btn-primary');
+                        btn.disabled = false;
+                    }
+                    if (btnAll) {
+                        btnAll.classList.remove('btn-disabled');
+                        btnAll.classList.add('btn-primary');
+                        btnAll.disabled = false;
+                    }
+                    if (placeholder) placeholder.style.display = 'flex';
+                    if (panel) panel.style.display = 'none';
+                    document.body.classList.remove('grading-started');
+                }
             }
 
             /* ========== 统计正确率 ========== */
             function updateStats() {
                 var total = 0, correct = 0;
-                PAGES.forEach(function (page) {
-                    page.sections.forEach(function (sec) {
-                        sec.questions.forEach(function (q) {
-                            total++;
-                            if (q.result === 'correct') correct++;
+                // Only count stats for graded pages
+                var gradedPageIndices = new Set();
+                listEl.querySelectorAll('.thumbnail-item[data-is-graded="true"]').forEach(function(item) {
+                    var idx = parseInt(item.getAttribute('data-page-idx'), 10);
+                    if (!isNaN(idx)) gradedPageIndices.add(idx);
+                });
+
+                gradedPageIndices.forEach(function(pageIdx) {
+                    if (pageIdx >= 0 && pageIdx < PAGES.length) {
+                        var page = PAGES[pageIdx];
+                        page.sections.forEach(function (sec) {
+                            sec.questions.forEach(function (q) {
+                                total++;
+                                if (q.result === 'correct') correct++;
+                            });
                         });
-                    });
+                    }
                 });
                 var el = document.getElementById('stats-total');
                 if (el) el.textContent = total;
@@ -1076,7 +2002,9 @@
                 el = document.getElementById('stats-accuracy');
                 if (el) el.textContent = total > 0 ? Math.round(correct / total * 100) + '%' : '—';
             }
-            var linkMap = {};       // thumbId -> thumbId（双向）
+            var linkMap = {};       // thumbId -> groupId
+            var groupMembers = {};  // groupId -> array of thumbIds
+            var groupNames = {};    // groupId -> groupName
             var linkingMode = null;  // 当前等待配对的第一个缩略图元素
             var linkGroupCounter = 0; // 配对编号（用于分配颜色）
 
@@ -1098,10 +2026,17 @@
                 return !!(id && linkMap[id]);
             }
 
-            function getLinkPartner(el) {
+            function getLinkPartners(el) {
                 var id = getThumbId(el);
-                if (!id || !linkMap[id]) return null;
-                return document.querySelector('[data-thumb-id="' + linkMap[id] + '"]');
+                if (!id || !linkMap[id]) return [];
+                var groupId = linkMap[id];
+                var members = groupMembers[groupId] || [];
+                return members
+                    .filter(function(memberId) { return memberId !== id; })
+                    .map(function(memberId) {
+                        return document.querySelector('[data-thumb-id="' + memberId + '"]');
+                    })
+                    .filter(Boolean);
             }
 
             function getLinkGroupId(el) {
@@ -1109,19 +2044,63 @@
             }
 
             function canLink(el) {
-                if (gradingStarted) return false;
-                return el.getAttribute('data-graded') !== 'true';
+                // Allow linking as long as the specific item is not graded yet.
+                // Ignore the global gradingStarted flag so users can link other images after some are graded.
+                return el.getAttribute('data-is-graded') !== 'true';
             }
 
             function setThumbGraded(el, graded) {
+                var linkBtn = el.querySelector('.thumbnail-link-btn');
+                var unlinkBtn = el.querySelector('.thumbnail-unlink-btn');
+                var scoreBadge = el.querySelector('.thumbnail-score-badge');
+
                 if (graded) {
-                    if (isThumbLinked(el)) unlinkThumbs(el);
-                    el.setAttribute('data-graded', 'true');
-                    el.classList.remove('is-linked');
-                    el.style.removeProperty('--link-color');
-                    el.removeAttribute('data-link-group');
+                    el.setAttribute('data-is-graded', 'true');
+                    if (linkBtn) linkBtn.remove();
+                    if (unlinkBtn) unlinkBtn.remove();
+                    
+                    // 计算并显示分数
+                    // 如果有链接组，计算总分
+                    var partners = getLinkPartners(el);
+                    var pageIndices = [parseInt(el.getAttribute('data-page-idx'), 10)];
+                    partners.forEach(function(p) {
+                        var pIdx = parseInt(p.getAttribute('data-page-idx'), 10);
+                        if (!isNaN(pIdx)) pageIndices.push(pIdx);
+                    });
+
+                    var total = 0, correct = 0;
+                    pageIndices.forEach(function(pageIdx) {
+                        if (!isNaN(pageIdx) && pageIdx >= 0 && pageIdx < PAGES.length) {
+                            var page = PAGES[pageIdx];
+                            page.sections.forEach(function(sec) {
+                                sec.questions.forEach(function(q) {
+                                    total++;
+                                    if (q.result === 'correct') correct++;
+                                });
+                            });
+                        }
+                    });
+
+                    var score = total > 0 ? Math.round((correct / total) * 100) : 0;
+                    if (scoreBadge) {
+                        scoreBadge.textContent = score + '%';
+                        scoreBadge.classList.remove('ungraded');
+                        // 根据分数设置颜色
+                        if (score >= 90) {
+                            scoreBadge.style.backgroundColor = 'rgba(82, 196, 26, 0.9)'; // 绿色
+                        } else if (score >= 60) {
+                            scoreBadge.style.backgroundColor = 'rgba(250, 173, 20, 0.9)'; // 橙色
+                        } else {
+                            scoreBadge.style.backgroundColor = 'rgba(245, 34, 45, 0.9)'; // 红色
+                        }
+                    }
                 } else {
-                    el.removeAttribute('data-graded');
+                    el.removeAttribute('data-is-graded');
+                    if (scoreBadge) {
+                        scoreBadge.textContent = '未批改';
+                        scoreBadge.classList.add('ungraded');
+                        scoreBadge.style.backgroundColor = '';
+                    }
                 }
             }
 
@@ -1147,9 +2126,9 @@
                 linkingMode = null;
             }
 
-            function toggleLink(el) {
+            function handleLinkClick(el) {
                 if (!canLink(el)) return;
-                if (isThumbLinked(el)) return;
+                
                 if (!linkingMode) {
                     enterLinkingMode(el);
                 } else if (linkingMode === el) {
@@ -1159,6 +2138,13 @@
                     var elA = linkingMode;
                     var elB = el;
                     exitLinkingMode();
+                    
+                    // 如果两个都在同一个组里，则无视
+                    if (linkMap[getThumbId(elA)] && linkMap[getThumbId(elA)] === linkMap[getThumbId(elB)]) {
+                        showToast('这两张图片已经在同一个链接组中了', 'info');
+                        return;
+                    }
+                    
                     doLinkThumbs(elA, elB);
                 }
             }
@@ -1168,73 +2154,139 @@
                 var idB = getThumbId(elB);
                 if (!idA || !idB) return;
 
-                linkGroupCounter = (linkGroupCounter + 1) % LINK_COLORS.length;
-                var color = LINK_COLORS[linkGroupCounter];
-                var groupId = 'link-' + linkGroupCounter;
+                var groupId;
+                var color;
+                var groupName;
 
-                linkMap[idA] = idB;
-                linkMap[idB] = idA;
+                // 如果 elA 已经在一个组里，则把 elB 加到该组；
+                // 否则创建新组
+                if (linkMap[idA]) {
+                    groupId = linkMap[idA];
+                    color = elA.style.getPropertyValue('--link-color');
+                    groupName = groupNames[groupId];
+                } else {
+                    linkGroupCounter++;
+                    color = LINK_COLORS[linkGroupCounter % LINK_COLORS.length];
+                    groupId = 'link-' + linkGroupCounter;
+                    groupName = '第' + linkGroupCounter + '组';
+                    linkMap[idA] = groupId;
+                    groupMembers[groupId] = [idA];
+                    groupNames[groupId] = groupName;
+                }
+
+                // 将 elB 加入组
+                linkMap[idB] = groupId;
+                if (groupMembers[groupId].indexOf(idB) === -1) {
+                    groupMembers[groupId].push(idB);
+                }
 
                 // 设置配对颜色边框
-                elA.style.setProperty('--link-color', color);
-                elB.style.setProperty('--link-color', color);
-                elA.setAttribute('data-link-group', groupId);
-                elB.setAttribute('data-link-group', groupId);
-                elA.classList.add('is-linked');
-                elB.classList.add('is-linked');
-
-                // 更新按钮为取消链接
-                [elA, elB].forEach(function (el) {
-                    var btn = el.querySelector('.thumbnail-link-btn');
-                    if (btn) {
-                        btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/><line x1="2" y1="2" x2="22" y2="22"/></svg>';
-                        btn.title = '取消链接';
+                [elA, elB].forEach(function(el) {
+                    el.style.setProperty('--link-color', color);
+                    el.setAttribute('data-link-group', groupId);
+                    el.classList.add('is-linked');
+                    
+                    // 添加/更新打组标签
+                    var badge = el.querySelector('.link-group-badge');
+                    if (!badge) {
+                        badge = document.createElement('div');
+                        badge.className = 'link-group-badge';
+                        el.appendChild(badge);
                     }
+                    badge.textContent = groupName;
                 });
 
                 // 自动将两个缩略图靠拢：把 elB 移到 elA 相邻位置
-                elA.remove();
                 elB.remove();
                 var ref = elA.nextElementSibling;
-                // 找到合适插入位置（elA 之后、第一个不属于同一配对的元素之前）
+                // 找到合适插入位置（属于同一配对的最后一个元素之后）
                 while (ref && ref.getAttribute && ref.getAttribute('data-link-group') === groupId) {
                     ref = ref.nextElementSibling;
                 }
-                listEl.insertBefore(elA, ref || null);
                 listEl.insertBefore(elB, ref || null);
+                
+                showToast('跨页图片链接成功', 'success');
             }
 
             function unlinkThumbs(el) {
-                if (gradingStarted) return;
                 var id = getThumbId(el);
                 if (!id || !linkMap[id]) return;
-                var partnerId = linkMap[id];
-                var elB = document.querySelector('[data-thumb-id="' + partnerId + '"]');
-                delete linkMap[id];
-                delete linkMap[partnerId];
-
-                [el, elB].forEach(function (item) {
-                    if (!item) return;
-                    item.classList.remove('is-linked');
-                    item.style.removeProperty('--link-color');
-                    item.removeAttribute('data-link-group');
-                    resetLinkBtn(item);
-                });
-
-                if (elB) {
-                    var all = Array.prototype.slice.call(listEl.querySelectorAll('.thumbnail-item'));
-                    all.forEach(function (t) { t.classList.remove('active'); });
-                    el.classList.add('active');
-                    selectThumb(el);
+                
+                var groupId = linkMap[id];
+                var members = groupMembers[groupId];
+                
+                // 从组中移除当前图片
+                var index = members.indexOf(id);
+                if (index > -1) {
+                    members.splice(index, 1);
                 }
+                delete linkMap[id];
+
+                // 恢复当前图片样式
+                el.classList.remove('is-linked');
+                el.style.removeProperty('--link-color');
+                el.removeAttribute('data-link-group');
+                var badge = el.querySelector('.link-group-badge');
+                if (badge) badge.remove();
+
+                // 如果组里只剩一张图片了，说明组解散了
+                if (members.length === 1) {
+                    var lastId = members[0];
+                    var lastEl = document.querySelector('[data-thumb-id="' + lastId + '"]');
+                    if (lastEl) {
+                        lastEl.classList.remove('is-linked');
+                        lastEl.style.removeProperty('--link-color');
+                        lastEl.removeAttribute('data-link-group');
+                        var lastBadge = lastEl.querySelector('.link-group-badge');
+                        if (lastBadge) lastBadge.remove();
+                    }
+                    delete linkMap[lastId];
+                    delete groupMembers[groupId];
+                    delete groupNames[groupId];
+                } else if (members.length > 0) {
+                    // 如果组里还有多张图片，将它们重新靠拢在一起
+                    var firstId = members[0];
+                    var firstEl = document.querySelector('[data-thumb-id="' + firstId + '"]');
+                    if (firstEl) {
+                        var currentRef = firstEl;
+                        for (var i = 1; i < members.length; i++) {
+                            var memberEl = document.querySelector('[data-thumb-id="' + members[i] + '"]');
+                            if (memberEl) {
+                                memberEl.remove();
+                                listEl.insertBefore(memberEl, currentRef.nextElementSibling);
+                                currentRef = memberEl;
+                            }
+                        }
+                    }
+                }
+                
+                showToast('跨页图片链接已取消', 'info');
             }
 
-            function resetLinkBtn(el) {
-                var btn = el.querySelector('.thumbnail-link-btn');
-                if (btn) {
-                    btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>';
-                    btn.title = '链接';
+            /* ========== Global Toast System ========== */
+            function showToast(message, type) {
+                var container = document.getElementById('toast-container');
+                if (!container) return;
+
+                var toast = document.createElement('div');
+                toast.className = 'toast-message';
+                
+                var iconHtml = '';
+                if (type === 'success') {
+                    iconHtml = '<div class="toast-icon success"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg></div>';
+                } else {
+                    iconHtml = '<div class="toast-icon info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg></div>';
                 }
+
+                toast.innerHTML = iconHtml + '<span>' + message + '</span>';
+                container.appendChild(toast);
+
+                setTimeout(function() {
+                    toast.classList.add('toast-fade-out');
+                    toast.addEventListener('animationend', function() {
+                        toast.remove();
+                    });
+                }, 2500);
             }
 
             /* ========== 4页作业数据 ========== */
@@ -1352,7 +2404,7 @@
                     var badge = document.createElement('div');
                     badge.className = 'question-badge ' + q.result;
                     if (qi === 0) badge.classList.add('current');
-                    badge.textContent = q.id;
+                    badge.textContent = qi + 1; // 使用顺序索引代替原有题号
                     badge.addEventListener('click', function () {
                         Array.prototype.slice.call(gridEl.children).forEach(function (b) { b.classList.remove('current'); });
                         badge.classList.add('current');
@@ -1380,22 +2432,6 @@
                 }
                 document.getElementById('ai-answer').textContent = q.answer;
                 document.getElementById('ai-explanation').innerHTML = q.explanation;
-
-                // 批改操作按钮：直接修改 q.result（同一引用，多处自动同步）
-                var btnCorrect = document.getElementById('btn-mark-correct');
-                var btnWrong   = document.getElementById('btn-mark-wrong');
-                if (btnCorrect) {
-                    btnCorrect.onclick = function () {
-                        q.result = 'correct';
-                        refreshCurrentQuestion(q);
-                    };
-                }
-                if (btnWrong) {
-                    btnWrong.onclick = function () {
-                        q.result = 'wrong';
-                        refreshCurrentQuestion(q);
-                    };
-                }
             }
 
             function refreshCurrentQuestion(q) {
@@ -1404,9 +2440,9 @@
                 if (gridEl) {
                     Array.prototype.slice.call(gridEl.children).forEach(function (badge) {
                         var txt = badge.textContent.trim();
-                        if (txt == q.id) {
-                            badge.className = 'question-badge ' + q.result;
-                        }
+                        // Note: we're using sequential index for display now, so we can't easily match by q.id anymore.
+                        // However, since we removed the mark-correct/mark-wrong buttons, this logic is currently unused.
+                        // Kept here in case it's needed in the future.
                     });
                 }
                 // 刷新识别结果区
@@ -1425,54 +2461,43 @@
                 }
             }
 
-            /* ========== 链接模式：合并两页题目，共用批改数据 ========== */
+            /* ========== 链接模式：合并多页题目，共用批改数据 ========== */
             var linkedGradingMap = {}; // 链接配对 key -> unified questions 数组
 
-            function getLinkedKey(pageIdxA, pageIdxB) {
-                return Math.min(pageIdxA, pageIdxB) + '_' + Math.max(pageIdxA, pageIdxB);
+            function getLinkedKey(pageIndices) {
+                // Ensure unique key regardless of order
+                return pageIndices.slice().sort().join('_');
             }
 
-            function buildLinkedQuestions(pageIdxA, pageIdxB) {
-                var pageA = PAGES[pageIdxA];
-                var pageB = PAGES[pageIdxB];
-                if (!pageA) return [];
-
-                // 两页 sections 拼接，全部题目扁平化
-                var aSections = pageA.sections || [];
-                var bSections = (pageB && pageB.sections) ? pageB.sections : [];
-
+            function buildLinkedQuestions(pageIndices) {
                 var questions = [];
-                aSections.forEach(function (sec) {
-                    sec.questions.forEach(function (q) { questions.push(q); });
-                });
-                bSections.forEach(function (sec) {
-                    sec.questions.forEach(function (q) { questions.push(q); });
+                pageIndices.forEach(function(idx) {
+                    var page = PAGES[idx];
+                    if (page && page.sections) {
+                        page.sections.forEach(function (sec) {
+                            sec.questions.forEach(function (q) { questions.push(q); });
+                        });
+                    }
                 });
                 return questions;
             }
 
-            function renderQuestionPanelWithLink(pageIdxA, pageIdxB) {
+            function renderQuestionPanelWithLink(pageIndices) {
                 var tabsEl = document.getElementById('question-tabs');
                 var gridEl = document.getElementById('question-grid');
                 tabsEl.innerHTML = '';
-                gridEl.innerHTML = '';
-
-                var pageA = PAGES[pageIdxA];
-                var pageB = PAGES[pageIdxB];
-                var aCount = (pageA && pageA.sections) ? pageA.sections.length : 0;
-                var bCount = (pageB && pageB.sections) ? pageB.sections.length : 0;
 
                 // 建立链接配对的统一题目列表
-                var key = getLinkedKey(pageIdxA, pageIdxB);
+                var key = getLinkedKey(pageIndices);
                 if (!linkedGradingMap[key]) {
-                    linkedGradingMap[key] = buildLinkedQuestions(pageIdxA, pageIdxB);
+                    linkedGradingMap[key] = buildLinkedQuestions(pageIndices);
                 }
                 var allQuestions = linkedGradingMap[key];
 
                 // 显示一个"综合批改"标签页
                 var span = document.createElement('span');
                 span.className = 'question-tab is-active';
-                span.textContent = '综合批改 [' + aCount + '+' + bCount + ' 大题]';
+                span.textContent = '综合批改 [' + pageIndices.length + '页 题目]';
                 tabsEl.appendChild(span);
 
                 renderLinkedQuestions(key, allQuestions);
@@ -1485,7 +2510,7 @@
                     var badge = document.createElement('div');
                     updateBadgeClass(badge, q.result);
                     if (qi === 0) badge.classList.add('current');
-                    badge.textContent = q.id;
+                    badge.textContent = qi + 1; // 使用顺序索引代替原有题号
                     badge.addEventListener('click', function () {
                         Array.prototype.slice.call(gridEl.children).forEach(function (b) { b.classList.remove('current'); });
                         badge.classList.add('current');
@@ -1513,7 +2538,8 @@
 
             function renderSectionWithLink(sectionIdx) {
                 var pageA = PAGES[currentPageIdx];
-                var linkedThumb = getLinkPartner(listEl.querySelector('.thumbnail-item.active'));
+                var partners = getLinkPartners(listEl.querySelector('.thumbnail-item.active'));
+                var linkedThumb = partners.length > 0 ? partners[0] : null;
                 var pageB = null;
                 if (linkedThumb) {
                     var linkedPageIdx = parseInt(linkedThumb.getAttribute('data-page-idx'), 10);
@@ -1535,7 +2561,7 @@
                     var badge = document.createElement('div');
                     badge.className = 'question-badge ' + q.result;
                     if (qi === 0) badge.classList.add('current');
-                    badge.textContent = q.id;
+                    badge.textContent = qi + 1; // 使用顺序索引代替原有题号
                     badge.addEventListener('click', function () {
                         Array.prototype.slice.call(gridEl.children).forEach(function (b) { b.classList.remove('current'); });
                         badge.classList.add('current');
@@ -1546,17 +2572,56 @@
                 renderDetail(sec.questions[0]);
             }
 
+            /* ========== 渲染批改痕迹 ========== */
+            function renderGradingMarks(pageIdx) {
+                var container = document.getElementById('main-preview-container');
+                if (!container) return;
+
+                // 清除旧的痕迹
+                var oldMarks = container.querySelectorAll('.grading-mark');
+                oldMarks.forEach(function(mark) { mark.remove(); });
+
+                var page = PAGES[pageIdx];
+                if (!page || !page.sections) return;
+
+                // 为了美观，随机生成几个批改痕迹的位置
+                // 实际项目中这些坐标应该由后端随批改数据返回
+                page.sections.forEach(function(sec) {
+                    sec.questions.forEach(function(q, index) {
+                        var mark = document.createElement('div');
+                        mark.className = 'grading-mark ' + q.result;
+                        
+                        // 随机位置 (20% ~ 80% 之间)
+                        var topPos = 20 + Math.random() * 60;
+                        var leftPos = 20 + Math.random() * 60;
+                        
+                        mark.style.top = topPos + '%';
+                        mark.style.left = leftPos + '%';
+
+                        if (q.result === 'correct') {
+                            mark.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
+                        } else {
+                            mark.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><circle cx="12" cy="12" r="10"/></svg>';
+                        }
+
+                        container.appendChild(mark);
+                    });
+                });
+            }
+
             /* ========== 选中缩略图 ========== */
             function selectThumb(item) {
                 if (!item) return;
                 var all = listEl.querySelectorAll('.thumbnail-item');
-                for (var i = 0; i < all.length; i++) all[i].classList.remove('active');
+                for (var i = 0; i < all.length; i++) {
+                    all[i].classList.remove('active');
+                }
                 item.classList.add('active');
 
-                var linked = getLinkPartner(item);
+                var partners = getLinkPartners(item);
 
                 // 如果有关联图，同时高亮关联图（蓝色边框）
-                if (linked) linked.classList.add('active');
+                partners.forEach(function(p) { p.classList.add('active'); });
 
                 // 预览区始终显示当前选中图（大图不并排）
                 var src = item.getAttribute('data-src') || (item.querySelector('img') || 0).src;
@@ -1572,13 +2637,21 @@
                 if (isNaN(pageIdx) || pageIdx < 0 || pageIdx >= PAGES.length) pageIdx = 0;
                 currentPageIdx = pageIdx;
 
-                if (linked) {
-                    var linkedPageIdx = parseInt(linked.getAttribute('data-page-idx'), 10);
-                    if (isNaN(linkedPageIdx) || linkedPageIdx < 0 || linkedPageIdx >= PAGES.length) linkedPageIdx = pageIdx;
-                    renderQuestionPanelWithLink(pageIdx, linkedPageIdx);
-                } else {
-                    renderQuestionPanel(pageIdx);
+                if (partners.length > 0) {
+                    // Do not render here directly if not graded, handled by checkGradingStatus
                 }
+
+                // 如果切换图片但还没批改，需要清除大图上的痕迹
+                var isGraded = item.getAttribute('data-is-graded') === 'true';
+                if (!isGraded) {
+                    var container = document.getElementById('main-preview-container');
+                    if (container) {
+                        var oldMarks = container.querySelectorAll('.grading-mark');
+                        oldMarks.forEach(function(mark) { mark.remove(); });
+                    }
+                }
+                
+                checkGradingStatus(item);
             }
 
             function deleteThumb(item) {
@@ -1649,15 +2722,18 @@
             function onListClick(e) {
                 var del  = e.target.closest('.delete-btn');
                 var link = e.target.closest('.thumbnail-link-btn');
+                var unlink = e.target.closest('.thumbnail-unlink-btn');
                 var item = e.target.closest('.thumbnail-item');
+                
                 if (del && item) { e.stopPropagation(); deleteThumb(item); return; }
+                if (unlink && item) {
+                    e.stopPropagation();
+                    unlinkThumbs(item);
+                    return;
+                }
                 if (link && item) {
                     e.stopPropagation();
-                    if (isThumbLinked(item)) {
-                        unlinkThumbs(item);
-                    } else {
-                        toggleLink(item);
-                    }
+                    handleLinkClick(item);
                     return;
                 }
                 if (item) selectThumb(item);
@@ -1674,13 +2750,25 @@
                     div.setAttribute('data-page-idx', i + 1);
                     div.innerHTML =
                         '<img src="' + src + '" alt="作业">' +
+                        '<div class="thumbnail-score-badge ungraded">未批改</div>' +
+                        '<div class="thumbnail-actions">' +
                         '<button class="thumbnail-link-btn" title="链接" aria-label="链接">' +
                         '<svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>' +
                         '</button>' +
+                        '<button class="thumbnail-unlink-btn" title="取消链接" aria-label="取消链接">' +
+                        '<svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/><line x1="2" y1="2" x2="22" y2="22"/></svg>' +
+                        '</button>' +
+                        '</div>' +
                         '<span class="delete-btn" role="button" tabindex="0" aria-label="删除">×</span>';
                     listEl.appendChild(div);
                     attachDragEvents(div);
                 });
+                
+                // Select the first newly added demo thumbnail
+                var allThumbs = listEl.querySelectorAll('.thumbnail-item');
+                if (allThumbs.length > 0) {
+                    selectThumb(allThumbs[allThumbs.length - EXTRA_SRC.length]);
+                }
             }
 
             function initExistingThumbs() {
@@ -1694,8 +2782,16 @@
                     }
                     if (!el.getAttribute('data-src') && im) el.setAttribute('data-src', im.getAttribute('src'));
                     attachDragEvents(el);
+                    
+                    // Mark initially loaded thumbs as graded for demonstration purpose
+                    // el.setAttribute('data-is-graded', 'true');
                 });
-                // 批改内容由 startGrading() 触发，不再此处渲染
+                
+                // Set the initial view status based on first thumbnail
+                var firstThumb = listEl.querySelector('.thumbnail-item');
+                if (firstThumb) {
+                    selectThumb(firstThumb);
+                }
             }
 
             if (btnLocal)  btnLocal.addEventListener('click', addDemoThumbnails);
@@ -1703,12 +2799,507 @@
 
             var btnStart = document.getElementById('btn-start-grading');
             if (btnStart) btnStart.addEventListener('click', startGrading);
+            
+            var btnStartAll = document.getElementById('btn-start-all-grading');
+            if (btnStartAll) btnStartAll.addEventListener('click', startGrading);
 
             if (listEl) {
                 listEl.addEventListener('click', onListClick);
                 initSortable();
                 initExistingThumbs();
+                
+                // Initialize scroll logic
+                initScrollLogic();
             }
+
+            function initScrollLogic() {
+                var btnScrollUp = document.getElementById('btn-scroll-up');
+                var btnScrollDown = document.getElementById('btn-scroll-down');
+                var btnScrollTop = document.getElementById('btn-scroll-top');
+                
+                if (!btnScrollUp || !btnScrollDown || !btnScrollTop || !listEl) return;
+
+                var SCROLL_AMOUNT = 200;
+
+                function updateScrollButtonsVisibility() {
+                    var scrollTop = listEl.scrollTop;
+                    var maxScroll = listEl.scrollHeight - listEl.clientHeight;
+                    
+                    // Allow small threshold for floating point calculations
+                    var hasOverflow = maxScroll > 1;
+
+                    if (!hasOverflow) {
+                        btnScrollUp.classList.remove('visible');
+                        btnScrollDown.classList.remove('visible');
+                        btnScrollTop.classList.remove('visible');
+                        return;
+                    }
+
+                    if (scrollTop > 10) {
+                        btnScrollUp.classList.add('visible');
+                        btnScrollTop.classList.add('visible');
+                    } else {
+                        btnScrollUp.classList.remove('visible');
+                        btnScrollTop.classList.remove('visible');
+                    }
+
+                    if (scrollTop < maxScroll - 10) {
+                        btnScrollDown.classList.add('visible');
+                    } else {
+                        btnScrollDown.classList.remove('visible');
+                    }
+                }
+
+                // Initial check
+                // Give it a tiny delay to ensure layout is done
+                setTimeout(updateScrollButtonsVisibility, 100);
+
+                // Check on scroll
+                listEl.addEventListener('scroll', updateScrollButtonsVisibility);
+
+                // Check when window resizes
+                window.addEventListener('resize', updateScrollButtonsVisibility);
+
+                // Also need to check when DOM changes (thumbnails added/removed)
+                var observer = new MutationObserver(function() {
+                    // Timeout ensures layout has reflowed
+                    setTimeout(updateScrollButtonsVisibility, 50);
+                });
+                observer.observe(listEl, { childList: true, subtree: true });
+
+                // Button clicks
+                btnScrollUp.addEventListener('click', function() {
+                    listEl.scrollBy({ top: -SCROLL_AMOUNT, behavior: 'smooth' });
+                });
+
+                btnScrollDown.addEventListener('click', function() {
+                    listEl.scrollBy({ top: SCROLL_AMOUNT, behavior: 'smooth' });
+                });
+
+                btnScrollTop.addEventListener('click', function() {
+                    listEl.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+            }
+
+            /* ========== 批量上传作业 Modal ========== */
+            var modalOverlay = document.getElementById('batch-upload-modal');
+            var btnBatchUpload = document.getElementById('btn-batch-upload');
+            var btnCloseModal = document.getElementById('btn-close-modal');
+            var btnCancelModal = document.getElementById('btn-cancel-modal');
+            var btnStartUpload = document.getElementById('btn-start-upload');
+            var uploadCard = document.getElementById('upload-card');
+            var uploadDragger = document.getElementById('upload-dragger');
+            var batchFileInput = document.getElementById('batch-file-input');
+            var uploadPreviewSection = document.getElementById('upload-preview-section');
+            var uploadPreviewCount = document.getElementById('upload-preview-count');
+            var uploadPreviewList = document.getElementById('upload-preview-list');
+            var matchTipsList = document.getElementById('match-tips-list');
+            var matchTypeRadios = document.querySelectorAll('input[name="match-type"]');
+
+            var selectedFiles = [];
+
+            // Tips content configurations
+            var TIPS_CONTENT = {
+                'filename': [
+                    '文件名需包含学生姓名+学号，如“张三-2503232”，同一学生多张作业在图片后面加 1、2、3。',
+                    '建议上传清晰无阴影、文字清晰的图片。',
+                    '上传中请保持页面稳定，文档齐全。'
+                ],
+                'ai': [
+                    '作业图片中需包含学生姓名，当学生重名时，添加识别标记，方便后续手动调整。',
+                    '建议上传清晰无阴影、文字清晰的图片。',
+                    '上传中请保持页面稳定，文档齐全。'
+                ]
+            };
+
+            function updateMatchTips(type) {
+                if (!matchTipsList || !TIPS_CONTENT[type]) return;
+                
+                var tipsHtml = TIPS_CONTENT[type].map(function(tip) {
+                    return '<li>' + tip + '</li>';
+                }).join('');
+                
+                matchTipsList.innerHTML = tipsHtml;
+            }
+
+            matchTypeRadios.forEach(function(radio) {
+                radio.addEventListener('change', function(e) {
+                    if (e.target.checked) {
+                        updateMatchTips(e.target.value);
+                    }
+                });
+            });
+
+            function openModal() {
+                modalOverlay.classList.add('active');
+            }
+
+            function closeModal() {
+                modalOverlay.classList.remove('active');
+                // Reset file input
+                batchFileInput.value = '';
+                selectedFiles = [];
+                // Allow clicking start upload for demo purposes
+                btnStartUpload.disabled = false;
+                
+                uploadCard.classList.remove('has-files');
+                uploadCard.style.borderColor = '';
+                uploadCard.style.boxShadow = '';
+                uploadDragger.style.background = '';
+                uploadPreviewSection.style.display = 'none';
+                uploadPreviewList.innerHTML = '';
+            }
+
+            if (btnBatchUpload) btnBatchUpload.addEventListener('click', openModal);
+            if (btnCloseModal) btnCloseModal.addEventListener('click', closeModal);
+            if (btnCancelModal) btnCancelModal.addEventListener('click', closeModal);
+
+            // Close modal when clicking outside of it
+            modalOverlay.addEventListener('click', function(e) {
+                if (e.target === modalOverlay) {
+                    closeModal();
+                }
+            });
+
+            // Handle file input
+            uploadDragger.addEventListener('click', function() {
+                batchFileInput.click();
+            });
+
+            uploadDragger.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                uploadCard.style.borderColor = 'var(--primary-blue)';
+                uploadCard.style.boxShadow = '0 0 8px rgba(24, 144, 255, 0.1)';
+                uploadDragger.style.background = '#e6f7ff';
+            });
+
+            uploadDragger.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                uploadCard.style.borderColor = '';
+                uploadCard.style.boxShadow = '';
+                uploadDragger.style.background = '';
+            });
+
+            uploadDragger.addEventListener('drop', function(e) {
+                e.preventDefault();
+                uploadCard.style.borderColor = '';
+                uploadCard.style.boxShadow = '';
+                uploadDragger.style.background = '';
+                if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                    handleFiles(e.dataTransfer.files);
+                }
+            });
+
+            batchFileInput.addEventListener('change', function(e) {
+                if (this.files && this.files.length > 0) {
+                    handleFiles(this.files);
+                }
+            });
+
+            function renderPreviews() {
+                uploadPreviewList.innerHTML = '';
+                if (selectedFiles.length === 0) {
+                    uploadPreviewSection.style.display = 'none';
+                    uploadCard.classList.remove('has-files');
+                    btnStartUpload.disabled = false; // Always enabled for demo purposes
+                    return;
+                }
+
+                uploadPreviewSection.style.display = 'block';
+                uploadCard.classList.add('has-files');
+                uploadPreviewCount.textContent = '已选择 ' + selectedFiles.length + ' 个文件';
+
+                selectedFiles.forEach(function(file, index) {
+                    var item = document.createElement('div');
+                    item.className = 'preview-item';
+
+                    var imgWrap = document.createElement('div');
+                    imgWrap.className = 'preview-img-wrap';
+
+                    var img = document.createElement('img');
+                    // If it's an image, create a URL, otherwise use a placeholder
+                    if (file.type && file.type.startsWith('image/')) {
+                        img.src = URL.createObjectURL(file);
+                        img.onload = function() {
+                            URL.revokeObjectURL(img.src);
+                        };
+                    } else {
+                        // Dummy PDF placeholder
+                        img.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="%23999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>';
+                    }
+                    img.alt = file.name;
+                    imgWrap.appendChild(img);
+
+                    var nameDiv = document.createElement('div');
+                    nameDiv.className = 'preview-filename';
+                    nameDiv.title = file.name;
+                    nameDiv.textContent = file.name;
+
+                    var delBtn = document.createElement('div');
+                    delBtn.className = 'preview-delete';
+                    delBtn.innerHTML = '&times;';
+                    delBtn.title = '移除';
+                    delBtn.onclick = function(e) {
+                        e.stopPropagation();
+                        selectedFiles.splice(index, 1);
+                        renderPreviews();
+                    };
+
+                    item.appendChild(imgWrap);
+                    item.appendChild(nameDiv);
+                    item.appendChild(delBtn);
+
+                    uploadPreviewList.appendChild(item);
+                });
+
+                btnStartUpload.disabled = false;
+            }
+
+            function handleFiles(files) {
+                var newFiles = Array.from(files);
+                selectedFiles = selectedFiles.concat(newFiles);
+                renderPreviews();
+            }
+
+            // Mock student list
+            var STUDENTS = [
+                { id: '20250022', name: '李1' },
+                { id: '20250023', name: '王2' },
+                { id: '20250024', name: '赵3' },
+                { id: '20250025', name: '陈4' }
+            ];
+
+            btnStartUpload.addEventListener('click', function() {
+                if (!btnStartUpload.disabled) {
+                    // 如果没有选择文件，填充示例数据
+                    if (selectedFiles.length === 0) {
+                        selectedFiles = [
+                            { name: '张伟', type: 'image/png', isSample: true },
+                            { name: '杨柳', type: 'image/png', isSample: true },
+                            { name: '赵强', type: 'image/png', isSample: true },
+                            { name: '郑辉', type: 'image/png', isSample: true }
+                        ];
+                    }
+                    // 仅隐藏批量上传模态框，不清理数据
+                    modalOverlay.classList.remove('active');
+                    // 打开作业匹配模态框
+                    openMatchModal();
+                }
+            });
+
+            /* ========== 作业匹配 Modal ========== */
+            var matchModalOverlay = document.getElementById('batch-match-modal');
+            var btnCloseMatchModal = document.getElementById('btn-close-match-modal');
+            var btnCompleteMatch = document.getElementById('btn-complete-match');
+            var matchTableBody = document.getElementById('match-table-body');
+            var matchTotalCount = document.getElementById('match-total-count');
+            var matchSuccessCount = document.getElementById('match-success-count');
+            var matchPendingCount = document.getElementById('match-pending-count');
+
+            function openMatchModal() {
+                // Determine matching and groups before rendering
+                var groupIndices = [];
+                if (selectedFiles.length >= 2) {
+                    var idx1 = Math.floor(Math.random() * selectedFiles.length);
+                    var idx2 = Math.floor(Math.random() * selectedFiles.length);
+                    while(idx1 === idx2) {
+                        idx2 = Math.floor(Math.random() * selectedFiles.length);
+                    }
+                    groupIndices.push(idx1, idx2);
+                }
+                
+                var groupStudent = STUDENTS[Math.floor(Math.random() * STUDENTS.length)];
+
+                selectedFiles.forEach(function(file, index) {
+                    if (groupIndices.indexOf(index) !== -1) {
+                        file.groupName = '第' + (linkGroupCounter + 1) + '组';
+                        file.matchedStudent = groupStudent;
+                    } else {
+                        file.groupName = '';
+                        file.matchedStudent = STUDENTS[Math.floor(Math.random() * STUDENTS.length)];
+                    }
+                });
+
+                matchModalOverlay.classList.add('active');
+                renderMatchTable();
+            }
+
+            function closeMatchModal() {
+                matchModalOverlay.classList.remove('active');
+                // Clean up if necessary
+            }
+
+            if (btnCloseMatchModal) btnCloseMatchModal.addEventListener('click', closeMatchModal);
+
+            // Generate options for student select
+            function getStudentOptionsHTML() {
+                var options = '<option value="">选择学生</option>';
+                STUDENTS.forEach(function(s) {
+                    options += '<option value="' + s.id + '">' + s.name + ' (' + s.id + ')</option>';
+                });
+                return options;
+            }
+
+            function updateMatchStats() {
+                var total = selectedFiles.length;
+                var success = matchTableBody.querySelectorAll('.row-status.success').length;
+                var pending = total - success;
+
+                matchTotalCount.textContent = total;
+                matchSuccessCount.textContent = success;
+                matchPendingCount.textContent = pending;
+            }
+
+            function renderMatchTable() {
+                matchTableBody.innerHTML = '';
+                var html = '';
+
+                selectedFiles.forEach(function(file, index) {
+                    var matchedStudent = file.matchedStudent;
+                    var isMatched = !!matchedStudent;
+
+                    var statusHtml = isMatched 
+                        ? '<div class="row-status success"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 已自动匹配</div>'
+                        : '<div class="row-status warning"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> 需人工确认</div>';
+
+                    var studentColHtml = isMatched
+                        ? '<div class="matched-student-info">' +
+                          '<span class="matched-student-name">' + matchedStudent.name + '</span>' +
+                          '<span class="matched-student-id">' + matchedStudent.id + '</span>' +
+                          '</div>'
+                        : '<div class="student-select-wrap">' +
+                          '<select class="student-select">' + getStudentOptionsHTML() + '</select>' +
+                          '</div>';
+
+                    var groupHtml = file.groupName 
+                        ? '<span class="link-group-badge" style="position:relative;top:0;left:0;display:inline-block;">' + file.groupName + '</span>' 
+                        : '';
+
+                    html += '<tr>' +
+                            '<td>' + file.name + '</td>' +
+                            '<td>' + studentColHtml + '</td>' +
+                            '<td>' + groupHtml + '</td>' +
+                            '<td style="text-align: right;">' + statusHtml + '</td>' +
+                            '</tr>';
+                });
+
+                matchTableBody.innerHTML = html;
+                updateMatchStats();
+
+                // Add event listeners for the newly generated selects
+                var selects = matchTableBody.querySelectorAll('.student-select');
+                selects.forEach(function(select) {
+                    select.addEventListener('change', function() {
+                        var tr = this.closest('tr');
+                        var statusCell = tr.querySelector('td:last-child');
+                        if (this.value) {
+                            statusCell.innerHTML = '<div class="row-status success"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> 已人工选择</div>';
+                        } else {
+                            statusCell.innerHTML = '<div class="row-status warning"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg> 需人工确认</div>';
+                        }
+                        updateMatchStats();
+                    });
+                });
+            }
+
+            btnCompleteMatch.addEventListener('click', function() {
+                closeMatchModal();
+                processUploadAndLink();
+            });
+
+            function processUploadAndLink() {
+                var firstNewThumb = null;
+                var addedThumbs = []; // 收集所有新增加的缩略图元素
+
+                // Append selected files to thumbnail list
+                selectedFiles.forEach(function(file, index) {
+                    var url = '';
+                    if (file.isSample) {
+                        url = 'assets/worksheet-preview.png';
+                    } else if (file.type && file.type.startsWith('image/')) {
+                        try {
+                            url = URL.createObjectURL(file);
+                        } catch (e) {
+                            url = 'assets/worksheet-preview.png';
+                        }
+                    } else {
+                        url = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="%23999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>';
+                    }
+
+                    var div = document.createElement('div');
+                    div.className = 'thumbnail-item';
+                    var thumbId = 'thumb-batch-' + Date.now() + '-' + index;
+                    div.setAttribute('data-src', url);
+                    div.setAttribute('data-thumb-id', thumbId);
+                    div.setAttribute('data-page-idx', index % PAGES.length); // Use mod to cycle through dummy pages
+                    // 将原始文件名保存在 dataset 中以便后续模拟判断
+                    div.setAttribute('data-filename', file.name || '作业');
+                    
+                    div.innerHTML =
+                        '<img src="' + url + '" alt="' + (file.name || '作业') + '">' +
+                        '<div class="thumbnail-score-badge ungraded">未批改</div>' +
+                        '<div class="thumbnail-actions">' +
+                        '<button class="thumbnail-link-btn" title="链接" aria-label="链接">' +
+                        '<svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>' +
+                        '</button>' +
+                        '<button class="thumbnail-unlink-btn" title="取消链接" aria-label="取消链接">' +
+                        '<svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/><line x1="2" y1="2" x2="22" y2="22"/></svg>' +
+                        '</button>' +
+                        '</div>' +
+                        '<span class="delete-btn" role="button" tabindex="0" aria-label="删除">×</span>';
+                    
+                    if (listEl) {
+                        listEl.appendChild(div);
+                        attachDragEvents(div);
+                        addedThumbs.push(div);
+                    }
+
+                    if (!firstNewThumb) {
+                        firstNewThumb = div;
+                    }
+                });
+
+                // 模拟系统自动识别跨页并打组
+                var groupedThumbs = [];
+                selectedFiles.forEach(function(file, index) {
+                    if (file.groupName) {
+                        groupedThumbs.push(addedThumbs[index]);
+                    }
+                });
+
+                if (groupedThumbs.length >= 2) {
+                    // 使用 setTimeout 确保 DOM 已经渲染完毕
+                    setTimeout(function() {
+                        var elA = groupedThumbs[0];
+                        var elB = groupedThumbs[1];
+                        doLinkThumbs(elA, elB);
+                        showToast('检测到有作业跨页，已自动完成打组', 'success');
+                    }, 100);
+                }
+
+                // We don't reset gradingStarted globally here anymore,
+                // we just make sure the UI matches the first new thumb's state.
+                if (firstNewThumb) {
+                    selectThumb(firstNewThumb);
+                } else {
+                    // Fallback check if nothing new
+                    var currentActive = listEl.querySelector('.thumbnail-item.active');
+                    if (currentActive) {
+                        checkGradingStatus(currentActive);
+                    }
+                }
+                
+                // Reset file input and selection AFTER rendering
+                batchFileInput.value = '';
+                selectedFiles = [];
+                uploadCard.classList.remove('has-files');
+                uploadCard.style.borderColor = '';
+                uploadCard.style.boxShadow = '';
+                uploadDragger.style.background = '';
+                uploadPreviewSection.style.display = 'none';
+                uploadPreviewList.innerHTML = '';
+            }
+
         })();
     </script>
 </body>
