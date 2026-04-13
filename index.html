@@ -1754,6 +1754,9 @@
                     var pageIdx = parseInt(item.getAttribute('data-page-idx'), 10) || 0;
                     renderQuestionPanel(pageIdx);
                     renderGradingMarks(pageIdx);
+                    
+                    // Update stats specifically for graded item
+                    updateStats();
                 } else {
                     if (btn) {
                         btn.classList.remove('btn-disabled');
@@ -1763,18 +1766,63 @@
                     if (placeholder) placeholder.style.display = 'flex';
                     if (panel) panel.style.display = 'none';
                     document.body.classList.remove('grading-started');
+                    
+                    // Reset stats when no item is graded or available
+                    updateStats();
                 }
             }
 
             /* ========== 统计正确率 ========== */
             function updateStats() {
                 var total = 0, correct = 0;
+                var currentStudentId = null;
+                
+                // Get the currently selected student
+                var activeCard = document.querySelector('.student-card.active');
+                if (activeCard) {
+                    currentStudentId = activeCard.getAttribute('data-student-id');
+                }
+
+                // If a student is selected, check if they have any thumbnails
+                var hasThumbs = false;
+                if (currentStudentId) {
+                    var studentThumbs = listEl.querySelectorAll('.thumbnail-item[data-student-id="' + currentStudentId + '"]');
+                    hasThumbs = studentThumbs.length > 0;
+                } else {
+                    // Fallback to check if there's any active thumbnail if no student is selected
+                    hasThumbs = listEl.querySelector('.thumbnail-item.active') !== null;
+                }
+
+                var elAccuracy = document.getElementById('stats-accuracy');
+                var elTotal = document.getElementById('stats-total');
+                var elCorrect = document.getElementById('stats-correct');
+                var elWrong = document.getElementById('stats-wrong');
+
+                if (!hasThumbs) {
+                    if (elTotal) elTotal.textContent = '0';
+                    if (elCorrect) elCorrect.textContent = '0题';
+                    if (elWrong) elWrong.textContent = '0题';
+                    if (elAccuracy) elAccuracy.textContent = '—';
+                    return;
+                }
+
                 // Only count stats for graded pages
                 var gradedPageIndices = new Set();
                 listEl.querySelectorAll('.thumbnail-item[data-is-graded="true"]').forEach(function(item) {
-                    var idx = parseInt(item.getAttribute('data-page-idx'), 10);
-                    if (!isNaN(idx)) gradedPageIndices.add(idx);
+                    // If we are filtering by student, only count this student's graded pages
+                    if (!currentStudentId || item.getAttribute('data-student-id') === currentStudentId) {
+                        var idx = parseInt(item.getAttribute('data-page-idx'), 10);
+                        if (!isNaN(idx)) gradedPageIndices.add(idx);
+                    }
                 });
+
+                if (gradedPageIndices.size === 0) {
+                    if (elTotal) elTotal.textContent = '0';
+                    if (elCorrect) elCorrect.textContent = '0题';
+                    if (elWrong) elWrong.textContent = '0题';
+                    if (elAccuracy) elAccuracy.textContent = '—';
+                    return;
+                }
 
                 gradedPageIndices.forEach(function(pageIdx) {
                     if (pageIdx >= 0 && pageIdx < PAGES.length) {
@@ -1787,14 +1835,11 @@
                         });
                     }
                 });
-                var el = document.getElementById('stats-total');
-                if (el) el.textContent = total;
-                el = document.getElementById('stats-correct');
-                if (el) el.textContent = correct + '题';
-                el = document.getElementById('stats-wrong');
-                if (el) el.textContent = (total - correct) + '题';
-                el = document.getElementById('stats-accuracy');
-                if (el) el.textContent = total > 0 ? Math.round(correct / total * 100) + '%' : '—';
+                
+                if (elTotal) elTotal.textContent = total;
+                if (elCorrect) elCorrect.textContent = correct + '题';
+                if (elWrong) elWrong.textContent = (total - correct) + '题';
+                if (elAccuracy) elAccuracy.textContent = total > 0 ? Math.round(correct / total * 100) + '%' : '—';
             }
             function getThumbId(el) {
                 return el.getAttribute('data-thumb-id');
