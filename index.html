@@ -272,10 +272,33 @@
             border-radius: 8px;
             padding: 12px;
             display: flex;
-            align-items: center;
+            flex-direction: column;
             gap: 10px;
             cursor: pointer;
             transition: all 0.2s;
+        }
+
+        .student-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .student-card-thumbs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            width: 100%;
+            margin-top: 4px;
+        }
+
+        .student-thumb-mini {
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+            object-fit: cover;
         }
 
         .student-card:hover {
@@ -1433,32 +1456,43 @@
                 <input type="text" class="search-input" placeholder="搜索学生">
             </div>
 
-            <div class="student-list">
-                <div class="student-card active">
-                    <div class="avatar">李</div>
-                    <div class="student-info">
-                        <div class="student-name">李1</div>
-                        <div class="student-id">20250022</div>
+            <div class="student-list" id="main-student-list">
+                <div class="student-card active" data-student-id="20250022">
+                    <div class="student-card-header">
+                        <div class="avatar">李</div>
+                        <div class="student-info">
+                            <div class="student-name">李1</div>
+                            <div class="student-id">20250022</div>
+                        </div>
+                        <div class="student-status">未批改</div>
                     </div>
-                    <div class="student-status">未批改</div>
+                    <div class="student-card-thumbs">
+                        <img src="assets/worksheet-preview.png" class="student-thumb-mini" alt="作业">
+                    </div>
                 </div>
 
-                <div class="student-card">
-                    <div class="avatar">李</div>
-                    <div class="student-info">
-                        <div class="student-name">李2</div>
-                        <div class="student-id">20250023</div>
+                <div class="student-card" data-student-id="20250023">
+                    <div class="student-card-header">
+                        <div class="avatar">李</div>
+                        <div class="student-info">
+                            <div class="student-name">李2</div>
+                            <div class="student-id">20250023</div>
+                        </div>
+                        <div class="student-status">未批改</div>
                     </div>
-                    <div class="student-status">未批改</div>
+                    <div class="student-card-thumbs"></div>
                 </div>
 
-                <div class="student-card">
-                    <div class="avatar">李</div>
-                    <div class="student-info">
-                        <div class="student-name">李3</div>
-                        <div class="student-id">20250024</div>
+                <div class="student-card" data-student-id="20250024">
+                    <div class="student-card-header">
+                        <div class="avatar">李</div>
+                        <div class="student-info">
+                            <div class="student-name">李3</div>
+                            <div class="student-id">20250024</div>
+                        </div>
+                        <div class="student-status">未上传</div>
                     </div>
-                    <div class="student-status">未上传</div>
+                    <div class="student-card-thumbs"></div>
                 </div>
             </div>
         </aside>
@@ -2079,7 +2113,27 @@
             function deleteThumb(item) {
                 var wasActive = item.classList.contains('active');
                 var nextItem = item.nextElementSibling || item.previousElementSibling;
+                var studentId = item.getAttribute('data-student-id');
+                var thumbId = item.getAttribute('data-thumb-id');
                 item.remove();
+                
+                // remove mini thumb if any
+                if (studentId && thumbId) {
+                    var studentCards = document.querySelectorAll('.student-card');
+                    studentCards.forEach(function(card) {
+                        if (card.getAttribute('data-student-id') === studentId) {
+                            var miniThumbs = card.querySelectorAll('.student-thumb-mini');
+                            // we just try to find by src or order if no exact match
+                            var src = item.getAttribute('data-src');
+                            miniThumbs.forEach(function(mini) {
+                                if (mini.src === src || mini.src.includes(src)) {
+                                    mini.remove();
+                                }
+                            });
+                        }
+                    });
+                }
+                
                 if (wasActive) {
                     if (nextItem) selectThumb(nextItem);
                     else if (mainImg) mainImg.removeAttribute('src');
@@ -2525,6 +2579,15 @@
                     
                     var student = STUDENTS.find(function(s) { return s.id === studentId; });
                     
+                    // Find the corresponding student card's thumb container
+                    var targetThumbsContainer = null;
+                    var studentCards = document.querySelectorAll('.student-card');
+                    studentCards.forEach(function(card) {
+                        if (card.getAttribute('data-student-id') === studentId) {
+                            targetThumbsContainer = card.querySelector('.student-card-thumbs');
+                        }
+                    });
+
                     files.forEach(function(file, index) {
                         var url = '';
                         if (file.isSample) {
@@ -2537,6 +2600,15 @@
                             }
                         } else {
                             url = 'assets/worksheet-preview.png';
+                        }
+
+                        // Also add mini thumb to student card
+                        if (targetThumbsContainer) {
+                            var miniImg = document.createElement('img');
+                            miniImg.src = url;
+                            miniImg.className = 'student-thumb-mini';
+                            miniImg.alt = '作业';
+                            targetThumbsContainer.appendChild(miniImg);
                         }
 
                         var div = document.createElement('div');
@@ -2555,7 +2627,6 @@
                         div.innerHTML =
                             '<img src="' + url + '" alt="' + displayName + '">' +
                             '<div class="thumbnail-score-badge ungraded">未批改</div>' +
-                            '<div style="position: absolute; top: 0; left: 0; background: rgba(24,144,255,0.8); color: white; font-size: 12px; padding: 2px 6px; border-bottom-right-radius: 4px;">' + (student ? student.name : '') + '</div>' +
                             '<span class="delete-btn" role="button" tabindex="0" aria-label="删除">×</span>';
                         
                         if (listEl) {
@@ -2570,12 +2641,11 @@
                     });
                     
                     // Update student card status
-                    var studentCards = document.querySelectorAll('.student-card');
                     studentCards.forEach(function(card) {
                         var idEl = card.querySelector('.student-id');
                         if (idEl && idEl.textContent === studentId) {
                             var statusEl = card.querySelector('.student-status');
-                            if (statusEl) {
+                            if (statusEl && statusEl.textContent === '未上传') {
                                 statusEl.textContent = '未批改';
                             }
                         }
