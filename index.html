@@ -549,22 +549,6 @@
             z-index: 10;
         }
 
-        .thumbnail-score-badge {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: rgba(0, 0, 0, 0.6);
-            color: #fff;
-            font-size: 12px;
-            text-align: center;
-            padding: 4px 0;
-            z-index: 5;
-        }
-        .thumbnail-score-badge.ungraded {
-            background: rgba(153, 153, 153, 0.8);
-        }
-
         .main-preview {
             flex: 1;
             min-width: 0;
@@ -1817,45 +1801,10 @@
             }
 
             function setThumbGraded(el, graded) {
-                var scoreBadge = el.querySelector('.thumbnail-score-badge');
-
                 if (graded) {
                     el.setAttribute('data-is-graded', 'true');
-                    
-                    // 计算并显示分数
-                    var pageIdx = parseInt(el.getAttribute('data-page-idx'), 10);
-
-                    var total = 0, correct = 0;
-                    if (!isNaN(pageIdx) && pageIdx >= 0 && pageIdx < PAGES.length) {
-                        var page = PAGES[pageIdx];
-                        page.sections.forEach(function(sec) {
-                            sec.questions.forEach(function(q) {
-                                total++;
-                                if (q.result === 'correct') correct++;
-                            });
-                        });
-                    }
-
-                    var score = total > 0 ? Math.round((correct / total) * 100) : 0;
-                    if (scoreBadge) {
-                        scoreBadge.textContent = score + '%';
-                        scoreBadge.classList.remove('ungraded');
-                        // 根据分数设置颜色
-                        if (score >= 90) {
-                            scoreBadge.style.backgroundColor = 'rgba(82, 196, 26, 0.9)'; // 绿色
-                        } else if (score >= 60) {
-                            scoreBadge.style.backgroundColor = 'rgba(250, 173, 20, 0.9)'; // 橙色
-                        } else {
-                            scoreBadge.style.backgroundColor = 'rgba(245, 34, 45, 0.9)'; // 红色
-                        }
-                    }
                 } else {
                     el.removeAttribute('data-is-graded');
-                    if (scoreBadge) {
-                        scoreBadge.textContent = '未批改';
-                        scoreBadge.classList.add('ungraded');
-                        scoreBadge.style.backgroundColor = '';
-                    }
                 }
             }
 
@@ -2246,7 +2195,6 @@
                     div.setAttribute('data-page-idx', i + 1);
                     div.innerHTML =
                         '<img src="' + src + '" alt="作业">' +
-                        '<div class="thumbnail-score-badge ungraded">未批改</div>' +
                         '<span class="delete-btn" role="button" tabindex="0" aria-label="删除">×</span>';
                     listEl.appendChild(div);
                     attachDragEvents(div);
@@ -2712,7 +2660,6 @@
                         var displayName = student ? (student.name + '的作业') : (file.name || '作业');
                         div.innerHTML =
                             '<img src="' + url + '" alt="' + displayName + '">' +
-                            '<div class="thumbnail-score-badge ungraded">未批改</div>' +
                             '<span class="delete-btn" role="button" tabindex="0" aria-label="删除">×</span>';
                         
                         if (listEl) {
@@ -2903,7 +2850,6 @@
                     
                     div.innerHTML =
                         '<img src="' + url + '" alt="' + (file.name || '作业') + '">' +
-                        '<div class="thumbnail-score-badge ungraded">未批改</div>' +
                         '<span class="delete-btn" role="button" tabindex="0" aria-label="删除">×</span>';
                     
                     if (listEl) {
