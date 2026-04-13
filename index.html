@@ -1664,6 +1664,18 @@
                             <input type="file" id="local-file-input" multiple accept=".jpg,.jpeg,.png" style="display:none">
                         </div>
                     </div>
+
+                    <!-- 手机拍照上传 二维码区域 -->
+                    <div id="mobile-upload-qrcode-area" style="display: none; margin-bottom: 12px; flex-shrink: 0; padding: 16px; background: #fff; border: 1px solid var(--border-color); border-radius: 8px; align-items: center; justify-content: center; gap: 20px;">
+                        <div style="width: 100px; height: 100px; background: #f0f0f0; border: 1px solid #ddd; padding: 4px;">
+                            <img src="assets/qrcode.png" alt="QR Code" style="width: 100%; height: 100%; object-fit: contain;" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'><rect width=\'100\' height=\'100\' fill=\'%23eee\'/><text x=\'50\' y=\'50\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-size=\'12\'>二维码</text></svg>'">
+                        </div>
+                        <div style="text-align: left;">
+                            <div style="font-weight: 600; font-size: 14px; margin-bottom: 8px;">手机扫码上传</div>
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;">请使用手机微信或浏览器扫描左侧二维码，<br>在手机端完成当前学生的作业拍摄和上传。</div>
+                            <button class="btn btn-secondary" id="btn-simulate-mobile-upload" style="padding: 4px 12px; font-size: 12px;">模拟手机端上传完成</button>
+                        </div>
+                    </div>
                     
                     <div style="flex: 1; overflow-y: auto; border: 1px dashed var(--border-color); border-radius: 8px; padding: 12px; background: #fafafa;">
                         <div id="local-upload-preview" style="display: flex; gap: 12px; flex-wrap: wrap;">
@@ -2517,7 +2529,24 @@
                 renderLocalPreviews();
             }
 
-            function openLocalUploadModal() {
+            function openLocalUploadModal(mode) {
+                // Determine mode: 'local' or 'mobile'
+                mode = mode || 'local';
+                
+                var modalTitle = document.querySelector('#local-upload-modal .modal-title');
+                var localUploadCard = document.getElementById('local-upload-card');
+                var mobileQrcodeArea = document.getElementById('mobile-upload-qrcode-area');
+                
+                if (mode === 'mobile') {
+                    if (modalTitle) modalTitle.textContent = '手机拍照上传';
+                    if (localUploadCard) localUploadCard.style.display = 'none';
+                    if (mobileQrcodeArea) mobileQrcodeArea.style.display = 'flex';
+                } else {
+                    if (modalTitle) modalTitle.textContent = '本地上传作业';
+                    if (localUploadCard) localUploadCard.style.display = 'block';
+                    if (mobileQrcodeArea) mobileQrcodeArea.style.display = 'none';
+                }
+
                 // Initialize map if empty
                 STUDENTS.forEach(function(s) {
                     if (!studentUploadMap[s.id]) {
@@ -2539,8 +2568,8 @@
                 // Do not clear studentUploadMap here, user might reopen to continue
             }
 
-            if (btnLocal) btnLocal.addEventListener('click', openLocalUploadModal);
-            if (btnMobile) btnMobile.addEventListener('click', openLocalUploadModal);
+            if (btnLocal) btnLocal.addEventListener('click', function() { openLocalUploadModal('local'); });
+            if (btnMobile) btnMobile.addEventListener('click', function() { openLocalUploadModal('mobile'); });
             
             if (btnCloseLocalModal) btnCloseLocalModal.addEventListener('click', closeLocalUploadModal);
             if (btnCancelLocalModal) btnCancelLocalModal.addEventListener('click', closeLocalUploadModal);
@@ -2612,6 +2641,26 @@
                 
                 renderLocalPreviews();
                 renderLocalStudentList(); // Update counts
+            }
+
+            // Handle simulation of mobile upload
+            var btnSimulateMobileUpload = document.getElementById('btn-simulate-mobile-upload');
+            if (btnSimulateMobileUpload) {
+                btnSimulateMobileUpload.addEventListener('click', function() {
+                    if (!currentLocalSelectedStudentId) {
+                        showToast('请先在左侧选择学生', 'warning');
+                        return;
+                    }
+                    
+                    var currentFiles = studentUploadMap[currentLocalSelectedStudentId] || [];
+                    studentUploadMap[currentLocalSelectedStudentId] = currentFiles.concat([
+                        { name: '手机拍摄作业_' + (currentFiles.length + 1), type: 'image/png', isSample: true }
+                    ]);
+                    
+                    showToast('手机端上传成功', 'success');
+                    renderLocalPreviews();
+                    renderLocalStudentList();
+                });
             }
 
             function renderLocalPreviews() {
