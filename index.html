@@ -1618,6 +1618,14 @@
     <!-- Global Toast Container -->
     <div id="toast-container" class="toast-container"></div>
 
+    <!-- 图片放大预览 Modal -->
+    <div class="modal-overlay" id="image-preview-modal" style="z-index: 10000; background: rgba(0, 0, 0, 0.85);">
+        <button class="modal-close" id="btn-close-image-preview" aria-label="关闭" style="position: absolute; top: 20px; right: 30px; color: #fff; font-size: 32px; background: none; border: none; cursor: pointer; z-index: 10001;">&times;</button>
+        <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 40px;">
+            <img id="image-preview-large" src="" alt="放大预览" style="max-width: 100%; max-height: 100%; object-fit: contain; box-shadow: 0 4px 24px rgba(0,0,0,0.5); border-radius: 4px;">
+        </div>
+    </div>
+
     <!-- 本地上传作业 Modal -->
     <div class="modal-overlay" id="local-upload-modal">
         <div class="modal-container" style="width: 760px; max-width: 90vw;">
@@ -1691,6 +1699,41 @@
             var btnMobile = document.getElementById('btn-upload-mobile');
 
             var gradingStarted = false; // 全局批改是否已开始（只要有批改过的即为 true）
+
+            /* ========== 图片放大预览 Modal ========== */
+            var imagePreviewModal = document.getElementById('image-preview-modal');
+            var btnCloseImagePreview = document.getElementById('btn-close-image-preview');
+            var imagePreviewLarge = document.getElementById('image-preview-large');
+
+            function openImagePreviewModal(url) {
+                if (imagePreviewLarge) {
+                    imagePreviewLarge.src = url;
+                }
+                if (imagePreviewModal) {
+                    imagePreviewModal.classList.add('active');
+                }
+            }
+
+            function closeImagePreviewModal() {
+                if (imagePreviewModal) {
+                    imagePreviewModal.classList.remove('active');
+                }
+                // Optional: clear src to stop loading if it's a large image
+                setTimeout(function() {
+                    if (imagePreviewLarge) imagePreviewLarge.src = '';
+                }, 300);
+            }
+
+            if (btnCloseImagePreview) {
+                btnCloseImagePreview.addEventListener('click', closeImagePreviewModal);
+            }
+            if (imagePreviewModal) {
+                imagePreviewModal.addEventListener('click', function(e) {
+                    if (e.target === imagePreviewModal) {
+                        closeImagePreviewModal();
+                    }
+                });
+            }
 
             /* ========== 开始批改 ========== */
             function startGrading() {
@@ -2599,9 +2642,17 @@
                         }
                         
                         var div = document.createElement('div');
-                        div.style.cssText = 'position:relative; width:80px; height:80px; border-radius:4px; overflow:hidden; border:1px solid #e8e8e8;';
+                        div.style.cssText = 'position:relative; width:80px; height:80px; border-radius:4px; overflow:hidden; border:1px solid #e8e8e8; cursor:pointer;';
                         div.innerHTML = '<img src="' + url + '" style="width:100%; height:100%; object-fit:cover;">' +
-                                        '<div class="delete-local-file" data-index="' + index + '" style="position:absolute; top:2px; right:2px; width:16px; height:16px; background:rgba(0,0,0,0.5); color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:12px;">×</div>';
+                                        '<div class="delete-local-file" data-index="' + index + '" style="position:absolute; top:2px; right:2px; width:16px; height:16px; background:rgba(0,0,0,0.5); color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:12px; z-index:10;">×</div>';
+                        
+                        // Add click listener for image preview
+                        div.addEventListener('click', function(e) {
+                            // ignore click if clicking on the delete button
+                            if (e.target.closest('.delete-local-file')) return;
+                            openImagePreviewModal(url);
+                        });
+                        
                         localUploadPreview.appendChild(div);
                     });
                     
