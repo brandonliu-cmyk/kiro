@@ -2647,27 +2647,27 @@
             var btnSimulateMobileUpload = document.getElementById('btn-simulate-mobile-upload');
             if (btnSimulateMobileUpload) {
                 btnSimulateMobileUpload.addEventListener('click', function() {
-                    if (!currentLocalSelectedStudentId) {
-                        showToast('请先在左侧选择学生', 'warning');
-                        return;
-                    }
+                    var totalUploaded = 0;
                     
-                    // Simulate uploading multiple images at once (e.g., 2-4 images)
-                    var numImages = Math.floor(Math.random() * 3) + 2; // 2 to 4 images
-                    var newFiles = [];
-                    var currentFiles = studentUploadMap[currentLocalSelectedStudentId] || [];
+                    STUDENTS.forEach(function(student) {
+                        var currentFiles = studentUploadMap[student.id] || [];
+                        // 模拟只给还没上传的学生或者随机追加图片，这里我们直接给每个学生补充 1-3 张图片
+                        var numImages = Math.floor(Math.random() * 3) + 1; 
+                        var newFiles = [];
+                        
+                        for (var i = 0; i < numImages; i++) {
+                            newFiles.push({ 
+                                name: '手机拍摄作业_' + (currentFiles.length + i + 1), 
+                                type: 'image/png', 
+                                isSample: true 
+                            });
+                            totalUploaded++;
+                        }
+                        
+                        studentUploadMap[student.id] = currentFiles.concat(newFiles);
+                    });
                     
-                    for (var i = 0; i < numImages; i++) {
-                        newFiles.push({ 
-                            name: '手机拍摄作业_' + (currentFiles.length + i + 1), 
-                            type: 'image/png', 
-                            isSample: true 
-                        });
-                    }
-                    
-                    studentUploadMap[currentLocalSelectedStudentId] = currentFiles.concat(newFiles);
-                    
-                    showToast('手机端上传成功（' + numImages + '张）', 'success');
+                    showToast('手机端全部学生上传成功（共' + totalUploaded + '张）', 'success');
                     renderLocalPreviews();
                     renderLocalStudentList();
                 });
