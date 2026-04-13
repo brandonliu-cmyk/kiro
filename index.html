@@ -2145,7 +2145,7 @@
 
             /* ========== 选中缩略图 ========== */
             function selectThumb(item) {
-                if (!item) return;
+                if (!item || item.style.display === 'none') return;
                 var all = listEl.querySelectorAll('.thumbnail-item');
                 for (var i = 0; i < all.length; i++) {
                     all[i].classList.remove('active');
@@ -2225,11 +2225,14 @@
             function getDragSibling(e) {
                 var siblings = Array.prototype.slice.call(
                     listEl.querySelectorAll('.thumbnail-item:not(.dragging)')
-                );
+                ).filter(function(el) { return el.style.display !== 'none'; }); // Only consider visible siblings
+                
+                if (siblings.length === 0) return null;
+                
                 return siblings.reduce(function (best, s) {
                     var r = s.getBoundingClientRect();
-                    var mid = r.left + r.width / 2;
-                    return (e.clientX < mid) ? best : s;
+                    var mid = r.top + r.height / 2; // Compare top/height for vertical list
+                    return (e.clientY < mid) ? best : s;
                 }, siblings[siblings.length - 1]);
             }
 
@@ -2351,16 +2354,27 @@
                     allCards.forEach(function(c) { c.classList.remove('active'); });
                     card.classList.add('active');
 
-                    // Find and select the first corresponding thumbnail
+                    // 筛选并显示当前学生的缩略图
                     var studentId = card.getAttribute('data-student-id');
                     if (studentId) {
-                        var targetThumb = listEl.querySelector('.thumbnail-item[data-student-id="' + studentId + '"]');
-                        if (targetThumb) {
-                            selectThumb(targetThumb);
-                            // Scroll to the thumbnail
-                            targetThumb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        var firstVisibleThumb = null;
+                        var allThumbs = listEl.querySelectorAll('.thumbnail-item');
+                        
+                        allThumbs.forEach(function(thumb) {
+                            if (thumb.getAttribute('data-student-id') === studentId) {
+                                thumb.style.display = '';
+                                if (!firstVisibleThumb) firstVisibleThumb = thumb;
+                            } else {
+                                thumb.style.display = 'none';
+                            }
+                        });
+
+                        if (firstVisibleThumb) {
+                            selectThumb(firstVisibleThumb);
+                            // 滚动到缩略图列表顶部
+                            listEl.scrollTop = 0;
                         } else {
-                            // If no thumbnail for this student, clear selection/preview
+                            // 如果该学生没有缩略图，清空选中和预览，显示空状态
                             var currentActive = listEl.querySelector('.thumbnail-item.active');
                             if (currentActive) {
                                 currentActive.classList.remove('active');
