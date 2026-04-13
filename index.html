@@ -807,135 +807,6 @@
         ::-webkit-scrollbar-thumb { background: #d9d9d9; border-radius: 3px; }
         ::-webkit-scrollbar-thumb:hover { background: #bfbfbf; }
 
-        /* Thumbnail Actions */
-        .thumbnail-actions {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            display: flex;
-            gap: 12px;
-            z-index: 10;
-            pointer-events: none; /* 让容器不阻挡点击 */
-        }
-
-        .thumbnail-actions button {
-            pointer-events: auto; /* 让按钮恢复点击响应 */
-        }
-
-        /* 批改进行中，隐藏所有链接按钮（禁止新建和取消链接） */
-        body.grading-started .thumbnail-actions {
-            display: none !important;
-        }
-
-        .thumbnail-link-btn, .thumbnail-unlink-btn {
-            width: 36px;
-            height: 36px;
-            background: rgba(255, 255, 255, 0.92);
-            border: 2px solid #ccc;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            backdrop-filter: blur(2px);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        }
-
-        .thumbnail-unlink-btn {
-            display: none; /* 默认隐藏，只有已链接的图片才显示 */
-        }
-
-        .thumbnail-item.is-linked .thumbnail-unlink-btn {
-            display: flex;
-        }
-
-        .thumbnail-link-btn:hover, .thumbnail-unlink-btn:hover {
-            transform: scale(1.1);
-        }
-
-        .thumbnail-link-btn:hover {
-            background: var(--primary-blue);
-            border-color: var(--primary-blue);
-        }
-
-        .thumbnail-unlink-btn:hover {
-            background: var(--error-red);
-            border-color: var(--error-red);
-        }
-
-        .thumbnail-link-btn:hover svg, .thumbnail-unlink-btn:hover svg {
-            stroke: #fff;
-        }
-
-        .thumbnail-link-btn svg, .thumbnail-unlink-btn svg {
-            width: 16px;
-            height: 16px;
-            stroke: #888;
-            fill: none;
-            stroke-width: 2;
-        }
-
-        /* 已链接缩略图的彩色外框（提示哪些图已配对） */
-        .thumbnail-item.is-linked {
-            outline: 3px solid var(--link-color, #FF9800);
-            outline-offset: -4px;
-        }
-
-        .thumbnail-item.is-linked::before {
-            content: '';
-            position: absolute;
-            top: -1px;
-            right: -1px;
-            width: 8px;
-            height: 8px;
-            background: var(--link-color, #FF9800);
-            border-radius: 50%;
-            z-index: 11;
-        }
-
-        /* 打组标签样式 */
-        .link-group-badge {
-            position: absolute;
-            top: 4px;
-            left: 4px;
-            background: var(--link-color, #FF9800);
-            color: #fff;
-            font-size: 11px;
-            font-weight: 600;
-            padding: 2px 6px;
-            border-radius: 4px;
-            z-index: 11;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-            pointer-events: none;
-        }
-
-        /* 链接模式：等待配对状态 */
-        @keyframes linking-pulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(24, 144, 255, 0.4); }
-            50% { box-shadow: 0 0 0 6px rgba(24, 144, 255, 0); }
-        }
-
-        .thumbnail-item.linking-pending {
-            border-color: var(--primary-blue);
-            animation: linking-pulse 1.2s ease-in-out infinite;
-        }
-
-        .thumbnail-item.linking-pending .thumbnail-actions {
-            display: flex;
-        }
-
-        .thumbnail-item.linking-pending .thumbnail-link-btn {
-            background: var(--primary-blue);
-            border-color: var(--primary-blue);
-            transform: scale(1.1);
-        }
-
-        .thumbnail-item.linking-pending .thumbnail-link-btn svg {
-            stroke: #fff;
-        }
-
         /* Modal Styles */
         .modal-overlay {
             position: fixed;
@@ -1635,14 +1506,6 @@
                         <div class="thumbnail-item active" data-src="assets/worksheet-preview.png" data-thumb-id="thumb-0" data-page-idx="0">
                             <img src="assets/worksheet-preview.png" alt="作业 1">
                             <div class="thumbnail-score-badge ungraded">未批改</div>
-                            <div class="thumbnail-actions">
-                                <button class="thumbnail-link-btn" title="链接" aria-label="链接">
-                                    <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-                                </button>
-                                <button class="thumbnail-unlink-btn" title="取消链接" aria-label="取消链接">
-                                    <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
-                                </button>
-                            </div>
                             <span class="delete-btn" role="button" tabindex="0" aria-label="删除">×</span>
                         </div>
                     </div>
@@ -1839,10 +1702,9 @@
                 <table class="match-table">
                     <thead>
                         <tr>
-                            <th width="30%">文件名</th>
+                            <th width="40%">文件名</th>
                             <th width="30%">识别学生</th>
-                            <th width="15%">分组状态</th>
-                            <th width="25%" style="text-align: right;">状态</th>
+                            <th width="30%" style="text-align: right;">状态</th>
                         </tr>
                     </thead>
                     <tbody id="match-table-body">
@@ -1940,21 +1802,8 @@
 
                     // 渲染右侧内容
                     var pageIdx = parseInt(item.getAttribute('data-page-idx'), 10) || 0;
-                    var partners = getLinkPartners(item);
-                    if (partners && partners.length > 0) {
-                        var pageIndices = [pageIdx];
-                        partners.forEach(function(p) {
-                            var pIdx = parseInt(p.getAttribute('data-page-idx'), 10);
-                            if (!isNaN(pIdx) && pIdx >= 0 && pIdx < PAGES.length) {
-                                pageIndices.push(pIdx);
-                            }
-                        });
-                        renderQuestionPanelWithLink(pageIndices);
-                        renderGradingMarks(pageIndices[0]); // 这里为了简单，只在第一张图上显示这套题目的痕迹。如果是打组，可做额外处理
-                    } else {
-                        renderQuestionPanel(pageIdx);
-                        renderGradingMarks(pageIdx);
-                    }
+                    renderQuestionPanel(pageIdx);
+                    renderGradingMarks(pageIdx);
                 } else {
                     if (btn) {
                         btn.classList.remove('btn-disabled');
@@ -2002,84 +1851,29 @@
                 el = document.getElementById('stats-accuracy');
                 if (el) el.textContent = total > 0 ? Math.round(correct / total * 100) + '%' : '—';
             }
-            var linkMap = {};       // thumbId -> groupId
-            var groupMembers = {};  // groupId -> array of thumbIds
-            var groupNames = {};    // groupId -> groupName
-            var linkingMode = null;  // 当前等待配对的第一个缩略图元素
-            var linkGroupCounter = 0; // 配对编号（用于分配颜色）
-
-            var LINK_COLORS = [
-                '#FF9800', // 橙
-                '#E91E63', // 粉红
-                '#9C27B0', // 紫色
-                '#00BCD4', // 青色
-                '#4CAF50', // 绿色
-                '#795548', // 棕色
-            ];
-
             function getThumbId(el) {
                 return el.getAttribute('data-thumb-id');
             }
 
-            function isThumbLinked(el) {
-                var id = getThumbId(el);
-                return !!(id && linkMap[id]);
-            }
-
-            function getLinkPartners(el) {
-                var id = getThumbId(el);
-                if (!id || !linkMap[id]) return [];
-                var groupId = linkMap[id];
-                var members = groupMembers[groupId] || [];
-                return members
-                    .filter(function(memberId) { return memberId !== id; })
-                    .map(function(memberId) {
-                        return document.querySelector('[data-thumb-id="' + memberId + '"]');
-                    })
-                    .filter(Boolean);
-            }
-
-            function getLinkGroupId(el) {
-                return el.getAttribute('data-link-group');
-            }
-
-            function canLink(el) {
-                // Allow linking as long as the specific item is not graded yet.
-                // Ignore the global gradingStarted flag so users can link other images after some are graded.
-                return el.getAttribute('data-is-graded') !== 'true';
-            }
-
             function setThumbGraded(el, graded) {
-                var linkBtn = el.querySelector('.thumbnail-link-btn');
-                var unlinkBtn = el.querySelector('.thumbnail-unlink-btn');
                 var scoreBadge = el.querySelector('.thumbnail-score-badge');
 
                 if (graded) {
                     el.setAttribute('data-is-graded', 'true');
-                    if (linkBtn) linkBtn.remove();
-                    if (unlinkBtn) unlinkBtn.remove();
                     
                     // 计算并显示分数
-                    // 如果有链接组，计算总分
-                    var partners = getLinkPartners(el);
-                    var pageIndices = [parseInt(el.getAttribute('data-page-idx'), 10)];
-                    partners.forEach(function(p) {
-                        var pIdx = parseInt(p.getAttribute('data-page-idx'), 10);
-                        if (!isNaN(pIdx)) pageIndices.push(pIdx);
-                    });
+                    var pageIdx = parseInt(el.getAttribute('data-page-idx'), 10);
 
                     var total = 0, correct = 0;
-                    pageIndices.forEach(function(pageIdx) {
-                        if (!isNaN(pageIdx) && pageIdx >= 0 && pageIdx < PAGES.length) {
-                            var page = PAGES[pageIdx];
-                            page.sections.forEach(function(sec) {
-                                sec.questions.forEach(function(q) {
-                                    total++;
-                                    if (q.result === 'correct') correct++;
-                                });
+                    if (!isNaN(pageIdx) && pageIdx >= 0 && pageIdx < PAGES.length) {
+                        var page = PAGES[pageIdx];
+                        page.sections.forEach(function(sec) {
+                            sec.questions.forEach(function(q) {
+                                total++;
+                                if (q.result === 'correct') correct++;
                             });
-                        }
-                    });
+                        });
+                    }
 
                     var score = total > 0 ? Math.round((correct / total) * 100) : 0;
                     if (scoreBadge) {
@@ -2102,165 +1896,6 @@
                         scoreBadge.style.backgroundColor = '';
                     }
                 }
-            }
-
-            function enterLinkingMode(el) {
-                linkingMode = el;
-                el.classList.add('linking-pending');
-                var btn = el.querySelector('.thumbnail-link-btn');
-                if (btn) {
-                    btn.classList.add('linking');
-                    btn.title = '等待选择第二张图…';
-                }
-            }
-
-            function exitLinkingMode() {
-                if (linkingMode) {
-                    linkingMode.classList.remove('linking-pending');
-                    var btn = linkingMode.querySelector('.thumbnail-link-btn');
-                    if (btn) {
-                        btn.classList.remove('linking');
-                        btn.title = '链接';
-                    }
-                }
-                linkingMode = null;
-            }
-
-            function handleLinkClick(el) {
-                if (!canLink(el)) return;
-                
-                if (!linkingMode) {
-                    enterLinkingMode(el);
-                } else if (linkingMode === el) {
-                    exitLinkingMode();
-                } else {
-                    if (!canLink(el)) { exitLinkingMode(); return; }
-                    var elA = linkingMode;
-                    var elB = el;
-                    exitLinkingMode();
-                    
-                    // 如果两个都在同一个组里，则无视
-                    if (linkMap[getThumbId(elA)] && linkMap[getThumbId(elA)] === linkMap[getThumbId(elB)]) {
-                        showToast('这两张图片已经在同一个链接组中了', 'info');
-                        return;
-                    }
-                    
-                    doLinkThumbs(elA, elB);
-                }
-            }
-
-            function doLinkThumbs(elA, elB) {
-                var idA = getThumbId(elA);
-                var idB = getThumbId(elB);
-                if (!idA || !idB) return;
-
-                var groupId;
-                var color;
-                var groupName;
-
-                // 如果 elA 已经在一个组里，则把 elB 加到该组；
-                // 否则创建新组
-                if (linkMap[idA]) {
-                    groupId = linkMap[idA];
-                    color = elA.style.getPropertyValue('--link-color');
-                    groupName = groupNames[groupId];
-                } else {
-                    linkGroupCounter++;
-                    color = LINK_COLORS[linkGroupCounter % LINK_COLORS.length];
-                    groupId = 'link-' + linkGroupCounter;
-                    groupName = '第' + linkGroupCounter + '组';
-                    linkMap[idA] = groupId;
-                    groupMembers[groupId] = [idA];
-                    groupNames[groupId] = groupName;
-                }
-
-                // 将 elB 加入组
-                linkMap[idB] = groupId;
-                if (groupMembers[groupId].indexOf(idB) === -1) {
-                    groupMembers[groupId].push(idB);
-                }
-
-                // 设置配对颜色边框
-                [elA, elB].forEach(function(el) {
-                    el.style.setProperty('--link-color', color);
-                    el.setAttribute('data-link-group', groupId);
-                    el.classList.add('is-linked');
-                    
-                    // 添加/更新打组标签
-                    var badge = el.querySelector('.link-group-badge');
-                    if (!badge) {
-                        badge = document.createElement('div');
-                        badge.className = 'link-group-badge';
-                        el.appendChild(badge);
-                    }
-                    badge.textContent = groupName;
-                });
-
-                // 自动将两个缩略图靠拢：把 elB 移到 elA 相邻位置
-                elB.remove();
-                var ref = elA.nextElementSibling;
-                // 找到合适插入位置（属于同一配对的最后一个元素之后）
-                while (ref && ref.getAttribute && ref.getAttribute('data-link-group') === groupId) {
-                    ref = ref.nextElementSibling;
-                }
-                listEl.insertBefore(elB, ref || null);
-                
-                showToast('跨页图片链接成功', 'success');
-            }
-
-            function unlinkThumbs(el) {
-                var id = getThumbId(el);
-                if (!id || !linkMap[id]) return;
-                
-                var groupId = linkMap[id];
-                var members = groupMembers[groupId];
-                
-                // 从组中移除当前图片
-                var index = members.indexOf(id);
-                if (index > -1) {
-                    members.splice(index, 1);
-                }
-                delete linkMap[id];
-
-                // 恢复当前图片样式
-                el.classList.remove('is-linked');
-                el.style.removeProperty('--link-color');
-                el.removeAttribute('data-link-group');
-                var badge = el.querySelector('.link-group-badge');
-                if (badge) badge.remove();
-
-                // 如果组里只剩一张图片了，说明组解散了
-                if (members.length === 1) {
-                    var lastId = members[0];
-                    var lastEl = document.querySelector('[data-thumb-id="' + lastId + '"]');
-                    if (lastEl) {
-                        lastEl.classList.remove('is-linked');
-                        lastEl.style.removeProperty('--link-color');
-                        lastEl.removeAttribute('data-link-group');
-                        var lastBadge = lastEl.querySelector('.link-group-badge');
-                        if (lastBadge) lastBadge.remove();
-                    }
-                    delete linkMap[lastId];
-                    delete groupMembers[groupId];
-                    delete groupNames[groupId];
-                } else if (members.length > 0) {
-                    // 如果组里还有多张图片，将它们重新靠拢在一起
-                    var firstId = members[0];
-                    var firstEl = document.querySelector('[data-thumb-id="' + firstId + '"]');
-                    if (firstEl) {
-                        var currentRef = firstEl;
-                        for (var i = 1; i < members.length; i++) {
-                            var memberEl = document.querySelector('[data-thumb-id="' + members[i] + '"]');
-                            if (memberEl) {
-                                memberEl.remove();
-                                listEl.insertBefore(memberEl, currentRef.nextElementSibling);
-                                currentRef = memberEl;
-                            }
-                        }
-                    }
-                }
-                
-                showToast('跨页图片链接已取消', 'info');
             }
 
             /* ========== Global Toast System ========== */
@@ -2461,117 +2096,6 @@
                 }
             }
 
-            /* ========== 链接模式：合并多页题目，共用批改数据 ========== */
-            var linkedGradingMap = {}; // 链接配对 key -> unified questions 数组
-
-            function getLinkedKey(pageIndices) {
-                // Ensure unique key regardless of order
-                return pageIndices.slice().sort().join('_');
-            }
-
-            function buildLinkedQuestions(pageIndices) {
-                var questions = [];
-                pageIndices.forEach(function(idx) {
-                    var page = PAGES[idx];
-                    if (page && page.sections) {
-                        page.sections.forEach(function (sec) {
-                            sec.questions.forEach(function (q) { questions.push(q); });
-                        });
-                    }
-                });
-                return questions;
-            }
-
-            function renderQuestionPanelWithLink(pageIndices) {
-                var tabsEl = document.getElementById('question-tabs');
-                var gridEl = document.getElementById('question-grid');
-                tabsEl.innerHTML = '';
-
-                // 建立链接配对的统一题目列表
-                var key = getLinkedKey(pageIndices);
-                if (!linkedGradingMap[key]) {
-                    linkedGradingMap[key] = buildLinkedQuestions(pageIndices);
-                }
-                var allQuestions = linkedGradingMap[key];
-
-                // 显示一个"综合批改"标签页
-                var span = document.createElement('span');
-                span.className = 'question-tab is-active';
-                span.textContent = '综合批改 [' + pageIndices.length + '页 题目]';
-                tabsEl.appendChild(span);
-
-                renderLinkedQuestions(key, allQuestions);
-            }
-
-            function renderLinkedQuestions(linkKey, questions) {
-                var gridEl = document.getElementById('question-grid');
-                gridEl.innerHTML = '';
-                questions.forEach(function (q, qi) {
-                    var badge = document.createElement('div');
-                    updateBadgeClass(badge, q.result);
-                    if (qi === 0) badge.classList.add('current');
-                    badge.textContent = qi + 1; // 使用顺序索引代替原有题号
-                    badge.addEventListener('click', function () {
-                        Array.prototype.slice.call(gridEl.children).forEach(function (b) { b.classList.remove('current'); });
-                        badge.classList.add('current');
-                        renderDetail(q);
-                    });
-                    gridEl.appendChild(badge);
-                });
-                if (questions.length > 0) renderDetail(questions[0]);
-            }
-
-            // 统一 badge 样式（current / correct / wrong）
-            function updateBadgeClass(badge, result) {
-                badge.className = 'question-badge ' + result;
-            }
-
-            function syncLinkedResults(q) {
-                // 将该题同步到所有 linkedGradingMap 条目中（同一对象引用）
-                for (var key in linkedGradingMap) {
-                    var arr = linkedGradingMap[key];
-                    for (var i = 0; i < arr.length; i++) {
-                        if (arr[i] === q) return; // 同一引用，无需同步
-                    }
-                }
-            }
-
-            function renderSectionWithLink(sectionIdx) {
-                var pageA = PAGES[currentPageIdx];
-                var partners = getLinkPartners(listEl.querySelector('.thumbnail-item.active'));
-                var linkedThumb = partners.length > 0 ? partners[0] : null;
-                var pageB = null;
-                if (linkedThumb) {
-                    var linkedPageIdx = parseInt(linkedThumb.getAttribute('data-page-idx'), 10);
-                    if (!isNaN(linkedPageIdx) && linkedPageIdx >= 0 && linkedPageIdx < PAGES.length) {
-                        pageB = PAGES[linkedPageIdx];
-                    }
-                }
-                var allSections = pageA.sections.concat(pageB ? pageB.sections : []);
-                var sec = allSections[sectionIdx];
-
-                var tabsEl = document.getElementById('question-tabs');
-                var gridEl = document.getElementById('question-grid');
-                Array.prototype.slice.call(tabsEl.children).forEach(function (tab, i) {
-                    tab.classList.toggle('is-active', i === sectionIdx);
-                });
-
-                gridEl.innerHTML = '';
-                sec.questions.forEach(function (q, qi) {
-                    var badge = document.createElement('div');
-                    badge.className = 'question-badge ' + q.result;
-                    if (qi === 0) badge.classList.add('current');
-                    badge.textContent = qi + 1; // 使用顺序索引代替原有题号
-                    badge.addEventListener('click', function () {
-                        Array.prototype.slice.call(gridEl.children).forEach(function (b) { b.classList.remove('current'); });
-                        badge.classList.add('current');
-                        renderDetail(q);
-                    });
-                    gridEl.appendChild(badge);
-                });
-                renderDetail(sec.questions[0]);
-            }
-
             /* ========== 渲染批改痕迹 ========== */
             function renderGradingMarks(pageIdx) {
                 var container = document.getElementById('main-preview-container');
@@ -2618,11 +2142,6 @@
                 }
                 item.classList.add('active');
 
-                var partners = getLinkPartners(item);
-
-                // 如果有关联图，同时高亮关联图（蓝色边框）
-                partners.forEach(function(p) { p.classList.add('active'); });
-
                 // 预览区始终显示当前选中图（大图不并排）
                 var src = item.getAttribute('data-src') || (item.querySelector('img') || 0).src;
                 if (mainImg) {
@@ -2636,10 +2155,6 @@
                 var pageIdx = parseInt(item.getAttribute('data-page-idx'), 10);
                 if (isNaN(pageIdx) || pageIdx < 0 || pageIdx >= PAGES.length) pageIdx = 0;
                 currentPageIdx = pageIdx;
-
-                if (partners.length > 0) {
-                    // Do not render here directly if not graded, handled by checkGradingStatus
-                }
 
                 // 如果切换图片但还没批改，需要清除大图上的痕迹
                 var isGraded = item.getAttribute('data-is-graded') === 'true';
@@ -2721,21 +2236,9 @@
 
             function onListClick(e) {
                 var del  = e.target.closest('.delete-btn');
-                var link = e.target.closest('.thumbnail-link-btn');
-                var unlink = e.target.closest('.thumbnail-unlink-btn');
                 var item = e.target.closest('.thumbnail-item');
                 
                 if (del && item) { e.stopPropagation(); deleteThumb(item); return; }
-                if (unlink && item) {
-                    e.stopPropagation();
-                    unlinkThumbs(item);
-                    return;
-                }
-                if (link && item) {
-                    e.stopPropagation();
-                    handleLinkClick(item);
-                    return;
-                }
                 if (item) selectThumb(item);
             }
 
@@ -2751,14 +2254,6 @@
                     div.innerHTML =
                         '<img src="' + src + '" alt="作业">' +
                         '<div class="thumbnail-score-badge ungraded">未批改</div>' +
-                        '<div class="thumbnail-actions">' +
-                        '<button class="thumbnail-link-btn" title="链接" aria-label="链接">' +
-                        '<svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>' +
-                        '</button>' +
-                        '<button class="thumbnail-unlink-btn" title="取消链接" aria-label="取消链接">' +
-                        '<svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/><line x1="2" y1="2" x2="22" y2="22"/></svg>' +
-                        '</button>' +
-                        '</div>' +
                         '<span class="delete-btn" role="button" tabindex="0" aria-label="删除">×</span>';
                     listEl.appendChild(div);
                     attachDragEvents(div);
@@ -3097,27 +2592,9 @@
             var matchPendingCount = document.getElementById('match-pending-count');
 
             function openMatchModal() {
-                // Determine matching and groups before rendering
-                var groupIndices = [];
-                if (selectedFiles.length >= 2) {
-                    var idx1 = Math.floor(Math.random() * selectedFiles.length);
-                    var idx2 = Math.floor(Math.random() * selectedFiles.length);
-                    while(idx1 === idx2) {
-                        idx2 = Math.floor(Math.random() * selectedFiles.length);
-                    }
-                    groupIndices.push(idx1, idx2);
-                }
-                
-                var groupStudent = STUDENTS[Math.floor(Math.random() * STUDENTS.length)];
-
                 selectedFiles.forEach(function(file, index) {
-                    if (groupIndices.indexOf(index) !== -1) {
-                        file.groupName = '第' + (linkGroupCounter + 1) + '组';
-                        file.matchedStudent = groupStudent;
-                    } else {
-                        file.groupName = '';
-                        file.matchedStudent = STUDENTS[Math.floor(Math.random() * STUDENTS.length)];
-                    }
+                    file.groupName = '';
+                    file.matchedStudent = STUDENTS[Math.floor(Math.random() * STUDENTS.length)];
                 });
 
                 matchModalOverlay.classList.add('active');
@@ -3171,14 +2648,9 @@
                           '<select class="student-select">' + getStudentOptionsHTML() + '</select>' +
                           '</div>';
 
-                    var groupHtml = file.groupName 
-                        ? '<span class="link-group-badge" style="position:relative;top:0;left:0;display:inline-block;">' + file.groupName + '</span>' 
-                        : '';
-
                     html += '<tr>' +
                             '<td>' + file.name + '</td>' +
                             '<td>' + studentColHtml + '</td>' +
-                            '<td>' + groupHtml + '</td>' +
                             '<td style="text-align: right;">' + statusHtml + '</td>' +
                             '</tr>';
                 });
@@ -3238,14 +2710,6 @@
                     div.innerHTML =
                         '<img src="' + url + '" alt="' + (file.name || '作业') + '">' +
                         '<div class="thumbnail-score-badge ungraded">未批改</div>' +
-                        '<div class="thumbnail-actions">' +
-                        '<button class="thumbnail-link-btn" title="链接" aria-label="链接">' +
-                        '<svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>' +
-                        '</button>' +
-                        '<button class="thumbnail-unlink-btn" title="取消链接" aria-label="取消链接">' +
-                        '<svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/><line x1="2" y1="2" x2="22" y2="22"/></svg>' +
-                        '</button>' +
-                        '</div>' +
                         '<span class="delete-btn" role="button" tabindex="0" aria-label="删除">×</span>';
                     
                     if (listEl) {
@@ -3258,24 +2722,6 @@
                         firstNewThumb = div;
                     }
                 });
-
-                // 模拟系统自动识别跨页并打组
-                var groupedThumbs = [];
-                selectedFiles.forEach(function(file, index) {
-                    if (file.groupName) {
-                        groupedThumbs.push(addedThumbs[index]);
-                    }
-                });
-
-                if (groupedThumbs.length >= 2) {
-                    // 使用 setTimeout 确保 DOM 已经渲染完毕
-                    setTimeout(function() {
-                        var elA = groupedThumbs[0];
-                        var elB = groupedThumbs[1];
-                        doLinkThumbs(elA, elB);
-                        showToast('检测到有作业跨页，已自动完成打组', 'success');
-                    }, 100);
-                }
 
                 // We don't reset gradingStarted globally here anymore,
                 // we just make sure the UI matches the first new thumb's state.
