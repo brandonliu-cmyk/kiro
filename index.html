@@ -1400,29 +1400,6 @@
                 </div>
             </div>
         </div>
-        <div class="sub-header-right">
-            <button class="btn btn-primary" id="btn-start-all-grading">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polygon points="5 3 19 12 5 21 5 3"/>
-                </svg>
-                全部开始批改
-            </button>
-            <button class="btn btn-primary" id="btn-batch-upload">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                    <polyline points="17 8 12 3 7 8"/>
-                    <line x1="12" y1="3" x2="12" y2="15"/>
-                </svg>
-                批量上传作业
-            </button>
-            <button type="button" class="btn btn-outline">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <polyline points="23 4 23 10 17 10"/>
-                    <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
-                </svg>
-                刷新
-            </button>
-        </div>
     </header>
     </div>
 
@@ -1781,7 +1758,6 @@
             function checkGradingStatus(item) {
                 var isGraded = item && item.getAttribute('data-is-graded') === 'true';
                 var btn = document.getElementById('btn-start-grading');
-                var btnAll = document.getElementById('btn-start-all-grading');
                 var placeholder = document.getElementById('grading-placeholder');
                 var panel = document.getElementById('grading-panel');
 
@@ -1790,11 +1766,6 @@
                         btn.classList.remove('btn-primary');
                         btn.classList.add('btn-disabled');
                         btn.disabled = true;
-                    }
-                    if (btnAll) {
-                        btnAll.classList.remove('btn-primary');
-                        btnAll.classList.add('btn-disabled');
-                        btnAll.disabled = true;
                     }
                     if (placeholder) placeholder.style.display = 'none';
                     if (panel) panel.style.display = '';
@@ -1809,11 +1780,6 @@
                         btn.classList.remove('btn-disabled');
                         btn.classList.add('btn-primary');
                         btn.disabled = false;
-                    }
-                    if (btnAll) {
-                        btnAll.classList.remove('btn-disabled');
-                        btnAll.classList.add('btn-primary');
-                        btnAll.disabled = false;
                     }
                     if (placeholder) placeholder.style.display = 'flex';
                     if (panel) panel.style.display = 'none';
@@ -2294,9 +2260,6 @@
 
             var btnStart = document.getElementById('btn-start-grading');
             if (btnStart) btnStart.addEventListener('click', startGrading);
-            
-            var btnStartAll = document.getElementById('btn-start-all-grading');
-            if (btnStartAll) btnStartAll.addEventListener('click', startGrading);
 
             if (listEl) {
                 listEl.addEventListener('click', onListClick);
@@ -2378,7 +2341,6 @@
 
             /* ========== 批量上传作业 Modal ========== */
             var modalOverlay = document.getElementById('batch-upload-modal');
-            var btnBatchUpload = document.getElementById('btn-batch-upload');
             var btnCloseModal = document.getElementById('btn-close-modal');
             var btnCancelModal = document.getElementById('btn-cancel-modal');
             var btnStartUpload = document.getElementById('btn-start-upload');
@@ -2445,7 +2407,6 @@
                 uploadPreviewList.innerHTML = '';
             }
 
-            if (btnBatchUpload) btnBatchUpload.addEventListener('click', openModal);
             if (btnCloseModal) btnCloseModal.addEventListener('click', closeModal);
             if (btnCancelModal) btnCancelModal.addEventListener('click', closeModal);
 
