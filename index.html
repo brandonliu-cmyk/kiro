@@ -2441,14 +2441,15 @@
             function renderLocalPreviews() {
                 var files = studentUploadMap[currentLocalSelectedStudentId] || [];
                 
+                // always clear existing previews except the empty tip
+                Array.from(localUploadPreview.children).forEach(function(child) {
+                    if (child.id !== 'local-upload-empty-tip') {
+                        child.remove();
+                    }
+                });
+
                 if (files.length > 0) {
                     localUploadEmptyTip.style.display = 'none';
-                    // clear existing previews except the empty tip
-                    Array.from(localUploadPreview.children).forEach(function(child) {
-                        if (child.id !== 'local-upload-empty-tip') {
-                            child.remove();
-                        }
-                    });
                     
                     files.forEach(function(file, index) {
                         var url = '';
@@ -2482,10 +2483,10 @@
                                 renderLocalPreviews();
                                 renderLocalStudentList();
                             }
-
-                            renderLocalPreviews();
                         });
                     });
+                } else {
+                    localUploadEmptyTip.style.display = 'flex';
                 }
             }
 
