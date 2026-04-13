@@ -2857,7 +2857,15 @@
                 // Reset map after upload
                 studentUploadMap = {};
                 
-                if (firstNewThumb) {
+                // After uploading, simulate a click on the currently active student card
+                // to trigger the filter logic properly, or click the first student if none active
+                var studentList = document.getElementById('main-student-list');
+                if (studentList) {
+                    var activeCard = studentList.querySelector('.student-card.active') || studentList.querySelector('.student-card');
+                    if (activeCard) {
+                        activeCard.click();
+                    }
+                } else if (firstNewThumb) {
                     selectThumb(firstNewThumb);
                 } else {
                     var currentActive = listEl.querySelector('.thumbnail-item.active');
