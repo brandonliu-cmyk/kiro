@@ -338,12 +338,6 @@
             min-width: 600px;
         }
 
-        .upload-actions {
-            display: flex;
-            gap: 12px;
-            flex-wrap: wrap;
-        }
-
         .image-panel {
             flex: 1;
             background: #fff;
@@ -1400,6 +1394,30 @@
                 </div>
             </div>
         </div>
+        <div class="sub-header-right">
+            <button type="button" class="btn btn-primary" id="btn-start-grading">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="5 3 19 12 5 21 5 3"/>
+                </svg>
+                开始批改
+            </button>
+            <button type="button" class="btn btn-primary" id="btn-upload-local">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="12" y1="18" x2="12" y2="12"/>
+                    <line x1="9" y1="15" x2="15" y2="15"/>
+                </svg>
+                本地上传作业
+            </button>
+            <button type="button" class="btn btn-primary" id="btn-upload-mobile">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+                    <line x1="12" y1="18" x2="12.01" y2="18"/>
+                </svg>
+                手机拍照上传
+            </button>
+        </div>
     </header>
     </div>
 
@@ -1447,31 +1465,6 @@
 
         <!-- Center Column -->
         <section class="center-column">
-            <div class="upload-actions">
-                <button type="button" class="btn btn-primary" id="btn-start-grading">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polygon points="5 3 19 12 5 21 5 3"/>
-                    </svg>
-                    开始批改
-                </button>
-                <button type="button" class="btn btn-primary" id="btn-upload-local">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-                        <polyline points="14 2 14 8 20 8"/>
-                        <line x1="12" y1="18" x2="12" y2="12"/>
-                        <line x1="9" y1="15" x2="15" y2="15"/>
-                    </svg>
-                    本地上传作业
-                </button>
-                <button type="button" class="btn btn-primary" id="btn-upload-mobile">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
-                        <line x1="12" y1="18" x2="12.01" y2="18"/>
-                    </svg>
-                    手机拍照上传
-                </button>
-            </div>
-
             <div class="image-panel">
                 <!-- Thumbnail List Container with Scroll Buttons -->
                 <div class="thumbnail-list-container">
