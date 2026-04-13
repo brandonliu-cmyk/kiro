@@ -1581,110 +1581,42 @@
     <div id="toast-container" class="toast-container"></div>
 
     <!-- Batch Upload Modal -->
-    <div class="modal-overlay" id="batch-upload-modal">
-        <div class="modal-container">
+    <!-- 本地上传作业 Modal -->
+    <div class="modal-overlay" id="local-upload-modal">
+        <div class="modal-container" style="width: 500px;">
             <div class="modal-header">
-                <div class="modal-title">批量上传作业</div>
-                <button class="modal-close" id="btn-close-modal" aria-label="关闭">&times;</button>
+                <div class="modal-title">本地上传作业</div>
+                <button class="modal-close" id="btn-close-local-modal" aria-label="关闭">&times;</button>
             </div>
-            <div class="modal-subtitle">批量上传学生作业图片，系统会根据图片名称匹配学生。</div>
-
-            <div class="upload-alert">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="12" y1="8" x2="12" y2="12"></line>
-                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                </svg>
-                <span>系统会自动根据学生每份作业是否存在跨页的情况进行自动匹配，将跨页的题目能够一起打组批改。</span>
-            </div>
-
-            <div class="upload-card" id="upload-card">
-                <div class="upload-dragger" id="upload-dragger">
-                    <div class="upload-icon">
-                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M17.5 19C19.985 19 22 16.985 22 14.5C22 12.138 20.185 10.215 17.882 10.024C17.388 6.621 14.484 4 11 4C7.134 4 4 7.134 4 11C4 11.233 4.011 11.463 4.033 11.69C1.782 12.083 0 14.075 0 16.5C0 19.538 2.462 22 5.5 22H17.5V19Z" fill="#e6f7ff" stroke="none"/>
-                            <path d="M17.5 19C19.985 19 22 16.985 22 14.5C22 12.138 20.185 10.215 17.882 10.024C17.388 6.621 14.484 4 11 4C7.134 4 4 7.134 4 11C4 11.233 4.011 11.463 4.033 11.69C1.782 12.083 0 14.075 0 16.5C0 19.538 2.462 22 5.5 22H17.5" stroke="#1890ff" stroke-width="2"/>
-                            <path d="M11 18V10M8 13L11 10L14 13" stroke="#1890ff" stroke-width="2"/>
-                        </svg>
-                    </div>
-                    <div class="upload-text">点击上传</div>
-                    <div class="upload-hint">支持 JPG, PNG, PDF 格式（支持批量上传）</div>
-                    <!-- Hidden file input for real upload action -->
-                    <input type="file" id="batch-file-input" multiple accept=".jpg,.jpeg,.png,.pdf" style="display:none">
-                </div>
-
-                <!-- Preview Area (Hidden by default) -->
-                <div class="upload-preview-section" id="upload-preview-section" style="display: none;">
-                    <div class="upload-preview-count" id="upload-preview-count">已选择 0 个文件</div>
-                    <div class="upload-preview-list" id="upload-preview-list">
-                        <!-- Preview items will be injected here -->
-                    </div>
-                </div>
-            </div>
-
-            <div class="match-section">
-                <div class="match-title">作业匹配方式</div>
-                <div class="match-options">
-                    <label class="radio-label">
-                        <input type="radio" name="match-type" class="radio-input" value="filename" checked>
-                        按文件名称匹配
-                    </label>
-                    <label class="radio-label">
-                        <input type="radio" name="match-type" class="radio-input" value="ai">
-                        AI识别匹配
-                    </label>
-                </div>
-                <ul class="match-tips" id="match-tips-list">
-                    <li>文件名需包含学生姓名+学号，如“张三-2503232”，同一学生多张作业在图片后面加 1、2、3。</li>
-                    <li>建议上传清晰无阴影、文字清晰的图片。</li>
-                    <li>上传中请保持页面稳定，文档齐全。</li>
-                </ul>
-            </div>
-
-            <div class="modal-footer">
-                <button class="btn-cancel" id="btn-cancel-modal">取消</button>
-                <button class="btn-upload" id="btn-start-upload">开始上传</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="batch-match-modal">
-        <div class="modal-container match-modal-container">
-            <div class="modal-header">
-                <div class="modal-title">作业匹配</div>
-                <button class="modal-close" id="btn-close-match-modal" aria-label="关闭">&times;</button>
-            </div>
-            <div class="modal-subtitle">系统会根据文件名匹配学生姓名或学号，未匹配的作业请手动选择学生。</div>
             
-            <div class="match-header-stats">
-                <div class="match-header-title">匹配结果（<span id="match-total-count">0</span>份）</div>
-                <div class="match-status-badge success">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                    已匹配 <span id="match-success-count">0</span>
-                </div>
-                <div class="match-status-badge warning">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                    待确认 <span id="match-pending-count">0</span>
-                </div>
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px;">选择学生</label>
+                <select id="local-upload-student-select" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px;">
+                    <!-- Options will be populated dynamically -->
+                </select>
             </div>
 
-            <div class="match-table-container">
-                <table class="match-table">
-                    <thead>
-                        <tr>
-                            <th width="40%">文件名</th>
-                            <th width="30%">识别学生</th>
-                            <th width="30%" style="text-align: right;">状态</th>
-                        </tr>
-                    </thead>
-                    <tbody id="match-table-body">
-                        <!-- Table rows will be injected here -->
-                    </tbody>
-                </table>
+            <div style="margin-bottom: 24px;">
+                <label style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px;">选择作业图片</label>
+                <div class="upload-card" id="local-upload-card" style="margin-bottom: 0;">
+                    <div class="upload-dragger" id="local-upload-dragger" style="padding: 24px;">
+                        <div class="upload-icon">
+                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                <polyline points="17 8 12 3 7 8"/>
+                                <line x1="12" y1="3" x2="12" y2="15"/>
+                            </svg>
+                        </div>
+                        <div class="upload-text" style="font-size: 14px;">点击选择图片</div>
+                        <input type="file" id="local-file-input" multiple accept=".jpg,.jpeg,.png" style="display:none">
+                    </div>
+                </div>
+                <div id="local-upload-preview" style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;"></div>
             </div>
 
-            <div class="modal-footer">
-                <button class="btn-primary" id="btn-complete-match">完成</button>
+            <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px;">
+                <button class="btn btn-secondary" id="btn-cancel-local-modal">取消</button>
+                <button class="btn btn-primary" id="btn-confirm-local-upload">确定上传</button>
             </div>
         </div>
     </div>
@@ -2248,9 +2180,6 @@
                 }
             }
 
-            if (btnLocal)  btnLocal.addEventListener('click', addDemoThumbnails);
-            if (btnMobile) btnMobile.addEventListener('click', addDemoThumbnails);
-
             var btnStart = document.getElementById('btn-start-grading');
             if (btnStart) btnStart.addEventListener('click', startGrading);
 
@@ -2332,190 +2261,273 @@
                 });
             }
 
-            /* ========== 批量上传作业 Modal ========== */
-            var modalOverlay = document.getElementById('batch-upload-modal');
-            var btnCloseModal = document.getElementById('btn-close-modal');
-            var btnCancelModal = document.getElementById('btn-cancel-modal');
-            var btnStartUpload = document.getElementById('btn-start-upload');
-            var uploadCard = document.getElementById('upload-card');
-            var uploadDragger = document.getElementById('upload-dragger');
-            var batchFileInput = document.getElementById('batch-file-input');
-            var uploadPreviewSection = document.getElementById('upload-preview-section');
-            var uploadPreviewCount = document.getElementById('upload-preview-count');
-            var uploadPreviewList = document.getElementById('upload-preview-list');
-            var matchTipsList = document.getElementById('match-tips-list');
-            var matchTypeRadios = document.querySelectorAll('input[name="match-type"]');
+            /* ========== 本地上传作业 Modal ========== */
+            var localUploadModal = document.getElementById('local-upload-modal');
+            var btnCloseLocalModal = document.getElementById('btn-close-local-modal');
+            var btnCancelLocalModal = document.getElementById('btn-cancel-local-modal');
+            var btnConfirmLocalUpload = document.getElementById('btn-confirm-local-upload');
+            var localUploadStudentSelect = document.getElementById('local-upload-student-select');
+            var localUploadCard = document.getElementById('local-upload-card');
+            var localUploadDragger = document.getElementById('local-upload-dragger');
+            var localFileInput = document.getElementById('local-file-input');
+            var localUploadPreview = document.getElementById('local-upload-preview');
 
-            var selectedFiles = [];
+            var currentLocalSelectedFiles = [];
+            var studentUploadMap = {}; // store files per student id
 
-            // Tips content configurations
-            var TIPS_CONTENT = {
-                'filename': [
-                    '文件名需包含学生姓名+学号，如“张三-2503232”，同一学生多张作业在图片后面加 1、2、3。',
-                    '建议上传清晰无阴影、文字清晰的图片。',
-                    '上传中请保持页面稳定，文档齐全。'
-                ],
-                'ai': [
-                    '作业图片中需包含学生姓名，当学生重名时，添加识别标记，方便后续手动调整。',
-                    '建议上传清晰无阴影、文字清晰的图片。',
-                    '上传中请保持页面稳定，文档齐全。'
-                ]
-            };
-
-            function updateMatchTips(type) {
-                if (!matchTipsList || !TIPS_CONTENT[type]) return;
-                
-                var tipsHtml = TIPS_CONTENT[type].map(function(tip) {
-                    return '<li>' + tip + '</li>';
-                }).join('');
-                
-                matchTipsList.innerHTML = tipsHtml;
-            }
-
-            matchTypeRadios.forEach(function(radio) {
-                radio.addEventListener('change', function(e) {
-                    if (e.target.checked) {
-                        updateMatchTips(e.target.value);
-                    }
+            function openLocalUploadModal() {
+                // Populate student select
+                localUploadStudentSelect.innerHTML = '<option value="">选择学生</option>';
+                STUDENTS.forEach(function(s) {
+                    localUploadStudentSelect.innerHTML += '<option value="' + s.id + '">' + s.name + ' (' + s.id + ')</option>';
                 });
-            });
-
-            function openModal() {
-                modalOverlay.classList.add('active');
-            }
-
-            function closeModal() {
-                modalOverlay.classList.remove('active');
-                // Reset file input
-                batchFileInput.value = '';
-                selectedFiles = [];
-                // Allow clicking start upload for demo purposes
-                btnStartUpload.disabled = false;
                 
-                uploadCard.classList.remove('has-files');
-                uploadCard.style.borderColor = '';
-                uploadCard.style.boxShadow = '';
-                uploadDragger.style.background = '';
-                uploadPreviewSection.style.display = 'none';
-                uploadPreviewList.innerHTML = '';
+                // Clear state
+                currentLocalSelectedFiles = [];
+                localUploadStudentSelect.value = '';
+                renderLocalPreviews();
+                
+                localUploadModal.classList.add('active');
             }
 
-            if (btnCloseModal) btnCloseModal.addEventListener('click', closeModal);
-            if (btnCancelModal) btnCancelModal.addEventListener('click', closeModal);
+            function closeLocalUploadModal() {
+                localUploadModal.classList.remove('active');
+                localFileInput.value = '';
+                currentLocalSelectedFiles = [];
+                renderLocalPreviews();
+            }
 
-            // Close modal when clicking outside of it
-            modalOverlay.addEventListener('click', function(e) {
-                if (e.target === modalOverlay) {
-                    closeModal();
+            if (btnLocal) btnLocal.addEventListener('click', openLocalUploadModal);
+            if (btnMobile) btnMobile.addEventListener('click', openLocalUploadModal);
+            
+            if (btnCloseLocalModal) btnCloseLocalModal.addEventListener('click', closeLocalUploadModal);
+            if (btnCancelLocalModal) btnCancelLocalModal.addEventListener('click', closeLocalUploadModal);
+            
+            localUploadModal.addEventListener('click', function(e) {
+                if (e.target === localUploadModal) {
+                    closeLocalUploadModal();
                 }
             });
 
-            // Handle file input
-            uploadDragger.addEventListener('click', function() {
-                batchFileInput.click();
+            localUploadDragger.addEventListener('click', function() {
+                localFileInput.click();
             });
 
-            uploadDragger.addEventListener('dragover', function(e) {
+            localUploadDragger.addEventListener('dragover', function(e) {
                 e.preventDefault();
-                uploadCard.style.borderColor = 'var(--primary-blue)';
-                uploadCard.style.boxShadow = '0 0 8px rgba(24, 144, 255, 0.1)';
-                uploadDragger.style.background = '#e6f7ff';
+                localUploadCard.style.borderColor = 'var(--primary-blue)';
+                localUploadCard.style.boxShadow = '0 0 8px rgba(24, 144, 255, 0.1)';
+                localUploadDragger.style.background = '#e6f7ff';
             });
 
-            uploadDragger.addEventListener('dragleave', function(e) {
+            localUploadDragger.addEventListener('dragleave', function(e) {
                 e.preventDefault();
-                uploadCard.style.borderColor = '';
-                uploadCard.style.boxShadow = '';
-                uploadDragger.style.background = '';
+                localUploadCard.style.borderColor = '';
+                localUploadCard.style.boxShadow = '';
+                localUploadDragger.style.background = '';
             });
 
-            uploadDragger.addEventListener('drop', function(e) {
+            localUploadDragger.addEventListener('drop', function(e) {
                 e.preventDefault();
-                uploadCard.style.borderColor = '';
-                uploadCard.style.boxShadow = '';
-                uploadDragger.style.background = '';
-                if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-                    handleFiles(e.dataTransfer.files);
-                }
-            });
-
-            batchFileInput.addEventListener('change', function(e) {
-                if (this.files && this.files.length > 0) {
-                    handleFiles(this.files);
-                }
-            });
-
-            function renderPreviews() {
-                uploadPreviewList.innerHTML = '';
-                if (selectedFiles.length === 0) {
-                    uploadPreviewSection.style.display = 'none';
-                    uploadCard.classList.remove('has-files');
-                    btnStartUpload.disabled = false; // Always enabled for demo purposes
+                localUploadCard.style.borderColor = '';
+                localUploadCard.style.boxShadow = '';
+                localUploadDragger.style.background = '';
+                
+                if (!localUploadStudentSelect.value) {
+                    showToast('请先选择学生', 'warning');
                     return;
                 }
 
-                uploadPreviewSection.style.display = 'block';
-                uploadCard.classList.add('has-files');
-                uploadPreviewCount.textContent = '已选择 ' + selectedFiles.length + ' 个文件';
+                if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                    handleLocalFiles(e.dataTransfer.files);
+                }
+            });
 
-                selectedFiles.forEach(function(file, index) {
-                    var item = document.createElement('div');
-                    item.className = 'preview-item';
+            localFileInput.addEventListener('change', function(e) {
+                if (!localUploadStudentSelect.value) {
+                    showToast('请先选择学生', 'warning');
+                    localFileInput.value = '';
+                    return;
+                }
+                if (this.files && this.files.length > 0) {
+                    handleLocalFiles(this.files);
+                }
+            });
+            
+            localUploadStudentSelect.addEventListener('change', function(e) {
+                var studentId = e.target.value;
+                if (studentId) {
+                    currentLocalSelectedFiles = studentUploadMap[studentId] || [];
+                } else {
+                    currentLocalSelectedFiles = [];
+                }
+                renderLocalPreviews();
+            });
 
-                    var imgWrap = document.createElement('div');
-                    imgWrap.className = 'preview-img-wrap';
-
-                    var img = document.createElement('img');
-                    // If it's an image, create a URL, otherwise use a placeholder
-                    if (file.type && file.type.startsWith('image/')) {
-                        img.src = URL.createObjectURL(file);
-                        img.onload = function() {
-                            URL.revokeObjectURL(img.src);
-                        };
-                    } else {
-                        // Dummy PDF placeholder
-                        img.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="%23999" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>';
-                    }
-                    img.alt = file.name;
-                    imgWrap.appendChild(img);
-
-                    var nameDiv = document.createElement('div');
-                    nameDiv.className = 'preview-filename';
-                    nameDiv.title = file.name;
-                    nameDiv.textContent = file.name;
-
-                    var delBtn = document.createElement('div');
-                    delBtn.className = 'preview-delete';
-                    delBtn.innerHTML = '&times;';
-                    delBtn.title = '移除';
-                    delBtn.onclick = function(e) {
-                        e.stopPropagation();
-                        selectedFiles.splice(index, 1);
-                        renderPreviews();
-                    };
-
-                    item.appendChild(imgWrap);
-                    item.appendChild(nameDiv);
-                    item.appendChild(delBtn);
-
-                    uploadPreviewList.appendChild(item);
-                });
-
-                btnStartUpload.disabled = false;
+            function handleLocalFiles(files) {
+                var studentId = localUploadStudentSelect.value;
+                if (!studentId) return;
+                
+                var newFiles = Array.from(files);
+                currentLocalSelectedFiles = currentLocalSelectedFiles.concat(newFiles);
+                studentUploadMap[studentId] = currentLocalSelectedFiles;
+                
+                renderLocalPreviews();
             }
 
-            function handleFiles(files) {
-                var newFiles = Array.from(files);
-                selectedFiles = selectedFiles.concat(newFiles);
-                renderPreviews();
+            function renderLocalPreviews() {
+                localUploadPreview.innerHTML = '';
+                
+                if (currentLocalSelectedFiles.length > 0) {
+                    currentLocalSelectedFiles.forEach(function(file, index) {
+                        var url = '';
+                        if (file.isSample) {
+                            url = 'assets/worksheet-preview.png';
+                        } else if (file.type && file.type.startsWith('image/')) {
+                            try {
+                                url = URL.createObjectURL(file);
+                            } catch (e) {
+                                url = 'assets/worksheet-preview.png';
+                            }
+                        } else {
+                            url = 'assets/worksheet-preview.png';
+                        }
+                        
+                        var div = document.createElement('div');
+                        div.style.cssText = 'position:relative; width:80px; height:80px; border-radius:4px; overflow:hidden; border:1px solid #e8e8e8;';
+                        div.innerHTML = '<img src="' + url + '" style="width:100%; height:100%; object-fit:cover;">' +
+                                        '<div class="delete-local-file" data-index="' + index + '" style="position:absolute; top:2px; right:2px; width:16px; height:16px; background:rgba(0,0,0,0.5); color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; font-size:12px;">×</div>';
+                        localUploadPreview.appendChild(div);
+                    });
+                    
+                    // Add delete listeners
+                    var deleteBtns = localUploadPreview.querySelectorAll('.delete-local-file');
+                    deleteBtns.forEach(function(btn) {
+                        btn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            var idx = parseInt(this.getAttribute('data-index'), 10);
+                            currentLocalSelectedFiles.splice(idx, 1);
+                            var studentId = localUploadStudentSelect.value;
+                            if (studentId) {
+                                studentUploadMap[studentId] = currentLocalSelectedFiles;
+                            }
+                            renderLocalPreviews();
+                        });
+                    });
+                }
+            }
+
+            btnConfirmLocalUpload.addEventListener('click', function() {
+                var hasAnyFile = false;
+                for (var key in studentUploadMap) {
+                    if (studentUploadMap[key] && studentUploadMap[key].length > 0) {
+                        hasAnyFile = true;
+                        break;
+                    }
+                }
+                
+                if (!hasAnyFile) {
+                    // Fill dummy data if none
+                    if (!localUploadStudentSelect.value) {
+                        showToast('请先选择学生并上传作业', 'warning');
+                        return;
+                    }
+                    var studentId = localUploadStudentSelect.value;
+                    studentUploadMap[studentId] = [
+                        { name: '作业1', type: 'image/png', isSample: true }
+                    ];
+                }
+                
+                processLocalUploads();
+                closeLocalUploadModal();
+            });
+            
+            function processLocalUploads() {
+                var firstNewThumb = null;
+                var addedThumbs = [];
+                
+                // process each student
+                for (var studentId in studentUploadMap) {
+                    var files = studentUploadMap[studentId];
+                    if (!files || files.length === 0) continue;
+                    
+                    var student = STUDENTS.find(function(s) { return s.id === studentId; });
+                    
+                    files.forEach(function(file, index) {
+                        var url = '';
+                        if (file.isSample) {
+                            url = 'assets/worksheet-preview.png';
+                        } else if (file.type && file.type.startsWith('image/')) {
+                            try {
+                                url = URL.createObjectURL(file);
+                            } catch (e) {
+                                url = 'assets/worksheet-preview.png';
+                            }
+                        } else {
+                            url = 'assets/worksheet-preview.png';
+                        }
+
+                        var div = document.createElement('div');
+                        div.className = 'thumbnail-item';
+                        var thumbId = 'thumb-local-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+                        div.setAttribute('data-src', url);
+                        div.setAttribute('data-thumb-id', thumbId);
+                        div.setAttribute('data-page-idx', index % PAGES.length);
+                        div.setAttribute('data-filename', file.name || '作业');
+                        if (student) {
+                            div.setAttribute('data-student-id', student.id);
+                            div.setAttribute('data-student-name', student.name);
+                        }
+                        
+                        var displayName = student ? (student.name + '的作业') : (file.name || '作业');
+                        div.innerHTML =
+                            '<img src="' + url + '" alt="' + displayName + '">' +
+                            '<div class="thumbnail-score-badge ungraded">未批改</div>' +
+                            '<div style="position: absolute; top: 0; left: 0; background: rgba(24,144,255,0.8); color: white; font-size: 12px; padding: 2px 6px; border-bottom-right-radius: 4px;">' + (student ? student.name : '') + '</div>' +
+                            '<span class="delete-btn" role="button" tabindex="0" aria-label="删除">×</span>';
+                        
+                        if (listEl) {
+                            listEl.appendChild(div);
+                            attachDragEvents(div);
+                            addedThumbs.push(div);
+                        }
+
+                        if (!firstNewThumb) {
+                            firstNewThumb = div;
+                        }
+                    });
+                    
+                    // Update student card status
+                    var studentCards = document.querySelectorAll('.student-card');
+                    studentCards.forEach(function(card) {
+                        var idEl = card.querySelector('.student-id');
+                        if (idEl && idEl.textContent === studentId) {
+                            var statusEl = card.querySelector('.student-status');
+                            if (statusEl) {
+                                statusEl.textContent = '未批改';
+                            }
+                        }
+                    });
+                }
+                
+                // Reset map after upload
+                studentUploadMap = {};
+                
+                if (firstNewThumb) {
+                    selectThumb(firstNewThumb);
+                } else {
+                    var currentActive = listEl.querySelector('.thumbnail-item.active');
+                    if (currentActive) {
+                        checkGradingStatus(currentActive);
+                    }
+                }
             }
 
             // Mock student list
             var STUDENTS = [
                 { id: '20250022', name: '李1' },
-                { id: '20250023', name: '王2' },
-                { id: '20250024', name: '赵3' },
-                { id: '20250025', name: '陈4' }
+                { id: '20250023', name: '李2' },
+                { id: '20250024', name: '李3' }
             ];
 
             btnStartUpload.addEventListener('click', function() {
