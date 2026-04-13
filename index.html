@@ -2250,6 +2250,47 @@
                 }
             }
 
+            function initStudentListEvents() {
+                var studentList = document.getElementById('main-student-list');
+                if (!studentList) return;
+
+                studentList.addEventListener('click', function(e) {
+                    var card = e.target.closest('.student-card');
+                    if (!card) return;
+
+                    // Update active styling
+                    var allCards = studentList.querySelectorAll('.student-card');
+                    allCards.forEach(function(c) { c.classList.remove('active'); });
+                    card.classList.add('active');
+
+                    // Find and select the first corresponding thumbnail
+                    var studentId = card.getAttribute('data-student-id');
+                    if (studentId) {
+                        var targetThumb = listEl.querySelector('.thumbnail-item[data-student-id="' + studentId + '"]');
+                        if (targetThumb) {
+                            selectThumb(targetThumb);
+                            // Scroll to the thumbnail
+                            targetThumb.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        } else {
+                            // If no thumbnail for this student, clear selection/preview
+                            var currentActive = listEl.querySelector('.thumbnail-item.active');
+                            if (currentActive) {
+                                currentActive.classList.remove('active');
+                            }
+                            if (mainImg) {
+                                mainImg.setAttribute('src', 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 24 24" fill="none" stroke="%23ccc" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>');
+                            }
+                            var container = document.getElementById('main-preview-container');
+                            if (container) {
+                                var oldMarks = container.querySelectorAll('.grading-mark');
+                                oldMarks.forEach(function(mark) { mark.remove(); });
+                            }
+                            checkGradingStatus(null);
+                        }
+                    }
+                });
+            }
+
             var btnStart = document.getElementById('btn-start-grading');
             if (btnStart) btnStart.addEventListener('click', startGrading);
 
@@ -2257,6 +2298,7 @@
                 listEl.addEventListener('click', onListClick);
                 initSortable();
                 initExistingThumbs();
+                initStudentListEvents();
                 
                 // Initialize scroll logic
                 initScrollLogic();
