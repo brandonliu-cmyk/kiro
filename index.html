@@ -1580,41 +1580,57 @@
     <!-- Global Toast Container -->
     <div id="toast-container" class="toast-container"></div>
 
-    <!-- Batch Upload Modal -->
     <!-- 本地上传作业 Modal -->
     <div class="modal-overlay" id="local-upload-modal">
-        <div class="modal-container" style="width: 500px;">
+        <div class="modal-container" style="width: 760px; max-width: 90vw;">
             <div class="modal-header">
                 <div class="modal-title">本地上传作业</div>
                 <button class="modal-close" id="btn-close-local-modal" aria-label="关闭">&times;</button>
             </div>
             
-            <div style="margin-bottom: 16px;">
-                <label style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px;">选择学生</label>
-                <select id="local-upload-student-select" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 14px;">
-                    <!-- Options will be populated dynamically -->
-                </select>
-            </div>
-
-            <div style="margin-bottom: 24px;">
-                <label style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px;">选择作业图片</label>
-                <div class="upload-card" id="local-upload-card" style="margin-bottom: 0;">
-                    <div class="upload-dragger" id="local-upload-dragger" style="padding: 24px;">
-                        <div class="upload-icon">
-                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                                <polyline points="17 8 12 3 7 8"/>
-                                <line x1="12" y1="3" x2="12" y2="15"/>
-                            </svg>
-                        </div>
-                        <div class="upload-text" style="font-size: 14px;">点击选择图片</div>
-                        <input type="file" id="local-file-input" multiple accept=".jpg,.jpeg,.png" style="display:none">
+            <div style="display: flex; gap: 20px; height: 400px; margin-bottom: 20px;">
+                <!-- 左侧学生列表 -->
+                <div style="flex: 0 0 200px; border: 1px solid var(--border-color); border-radius: 8px; display: flex; flex-direction: column; overflow: hidden; background: #fff;">
+                    <div style="padding: 10px 12px; background: #f9f9f9; border-bottom: 1px solid var(--border-color); font-weight: 500; font-size: 14px;">
+                        选择学生
+                    </div>
+                    <div id="local-upload-student-list" style="flex: 1; overflow-y: auto; padding: 8px;">
+                        <!-- 学生列表项会动态生成 -->
                     </div>
                 </div>
-                <div id="local-upload-preview" style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap;"></div>
+
+                <!-- 右侧上传区 -->
+                <div style="flex: 1; display: flex; flex-direction: column; min-width: 0;">
+                    <div style="font-weight: 500; font-size: 14px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center;">
+                        <span>为 <span id="current-upload-student-name" style="color: var(--primary-blue); font-weight: 600;">-</span> 上传作业</span>
+                    </div>
+                    
+                    <div class="upload-card" id="local-upload-card" style="margin-bottom: 12px; flex-shrink: 0;">
+                        <div class="upload-dragger" id="local-upload-dragger" style="padding: 24px;">
+                            <div class="upload-icon">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                    <polyline points="17 8 12 3 7 8"/>
+                                    <line x1="12" y1="3" x2="12" y2="15"/>
+                                </svg>
+                            </div>
+                            <div class="upload-text" style="font-size: 14px;">点击或拖拽图片到此处上传</div>
+                            <input type="file" id="local-file-input" multiple accept=".jpg,.jpeg,.png" style="display:none">
+                        </div>
+                    </div>
+                    
+                    <div style="flex: 1; overflow-y: auto; border: 1px dashed var(--border-color); border-radius: 8px; padding: 12px; background: #fafafa;">
+                        <div id="local-upload-preview" style="display: flex; gap: 12px; flex-wrap: wrap;">
+                            <!-- 预览图会显示在这里 -->
+                            <div id="local-upload-empty-tip" style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--text-secondary); font-size: 13px;">
+                                暂无已上传的作业图片
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px;">
+            <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 12px; padding-top: 16px; border-top: 1px solid var(--border-color);">
                 <button class="btn btn-secondary" id="btn-cancel-local-modal">取消</button>
                 <button class="btn btn-primary" id="btn-confirm-local-upload">确定上传</button>
             </div>
@@ -2266,26 +2282,77 @@
             var btnCloseLocalModal = document.getElementById('btn-close-local-modal');
             var btnCancelLocalModal = document.getElementById('btn-cancel-local-modal');
             var btnConfirmLocalUpload = document.getElementById('btn-confirm-local-upload');
-            var localUploadStudentSelect = document.getElementById('local-upload-student-select');
+            var localUploadStudentList = document.getElementById('local-upload-student-list');
+            var currentUploadStudentName = document.getElementById('current-upload-student-name');
             var localUploadCard = document.getElementById('local-upload-card');
             var localUploadDragger = document.getElementById('local-upload-dragger');
             var localFileInput = document.getElementById('local-file-input');
             var localUploadPreview = document.getElementById('local-upload-preview');
+            var localUploadEmptyTip = document.getElementById('local-upload-empty-tip');
 
-            var currentLocalSelectedFiles = [];
+            var currentLocalSelectedStudentId = null;
             var studentUploadMap = {}; // store files per student id
 
-            function openLocalUploadModal() {
-                // Populate student select
-                localUploadStudentSelect.innerHTML = '<option value="">选择学生</option>';
+            function renderLocalStudentList() {
+                localUploadStudentList.innerHTML = '';
                 STUDENTS.forEach(function(s) {
-                    localUploadStudentSelect.innerHTML += '<option value="' + s.id + '">' + s.name + ' (' + s.id + ')</option>';
+                    var files = studentUploadMap[s.id] || [];
+                    var isActive = currentLocalSelectedStudentId === s.id;
+                    
+                    var item = document.createElement('div');
+                    item.style.cssText = 'padding: 10px 12px; border-radius: 6px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; transition: all 0.2s; ' + 
+                                         (isActive ? 'background: #e6f7ff; border: 1px solid var(--primary-blue); color: var(--primary-blue); font-weight: 500;' : 'border: 1px solid transparent; color: var(--text-dark);');
+                    
+                    item.onmouseover = function() {
+                        if (!isActive) this.style.background = '#f5f5f5';
+                    };
+                    item.onmouseout = function() {
+                        if (!isActive) this.style.background = 'transparent';
+                    };
+                    
+                    var nameDiv = document.createElement('div');
+                    nameDiv.textContent = s.name;
+                    
+                    var countBadge = document.createElement('div');
+                    countBadge.style.cssText = 'background: ' + (files.length > 0 ? 'var(--success-green)' : '#d9d9d9') + '; color: #fff; font-size: 12px; padding: 2px 8px; border-radius: 10px; font-weight: normal;';
+                    countBadge.textContent = files.length > 0 ? (files.length + '张') : '0张';
+                    
+                    item.appendChild(nameDiv);
+                    item.appendChild(countBadge);
+                    
+                    item.onclick = function() {
+                        selectLocalStudent(s.id);
+                    };
+                    
+                    localUploadStudentList.appendChild(item);
+                });
+            }
+
+            function selectLocalStudent(studentId) {
+                currentLocalSelectedStudentId = studentId;
+                var student = STUDENTS.find(function(s) { return s.id === studentId; });
+                if (student) {
+                    currentUploadStudentName.textContent = student.name;
+                } else {
+                    currentUploadStudentName.textContent = '-';
+                }
+                
+                renderLocalStudentList(); // Refresh list styles
+                renderLocalPreviews();
+            }
+
+            function openLocalUploadModal() {
+                // Initialize map if empty
+                STUDENTS.forEach(function(s) {
+                    if (!studentUploadMap[s.id]) {
+                        studentUploadMap[s.id] = [];
+                    }
                 });
                 
-                // Clear state
-                currentLocalSelectedFiles = [];
-                localUploadStudentSelect.value = '';
-                renderLocalPreviews();
+                // Select first student by default
+                if (STUDENTS.length > 0) {
+                    selectLocalStudent(STUDENTS[0].id);
+                }
                 
                 localUploadModal.classList.add('active');
             }
@@ -2293,8 +2360,7 @@
             function closeLocalUploadModal() {
                 localUploadModal.classList.remove('active');
                 localFileInput.value = '';
-                currentLocalSelectedFiles = [];
-                renderLocalPreviews();
+                // Do not clear studentUploadMap here, user might reopen to continue
             }
 
             if (btnLocal) btnLocal.addEventListener('click', openLocalUploadModal);
@@ -2310,11 +2376,16 @@
             });
 
             localUploadDragger.addEventListener('click', function() {
+                if (!currentLocalSelectedStudentId) {
+                    showToast('请先在左侧选择学生', 'warning');
+                    return;
+                }
                 localFileInput.click();
             });
 
             localUploadDragger.addEventListener('dragover', function(e) {
                 e.preventDefault();
+                if (!currentLocalSelectedStudentId) return;
                 localUploadCard.style.borderColor = 'var(--primary-blue)';
                 localUploadCard.style.boxShadow = '0 0 8px rgba(24, 144, 255, 0.1)';
                 localUploadDragger.style.background = '#e6f7ff';
@@ -2333,8 +2404,8 @@
                 localUploadCard.style.boxShadow = '';
                 localUploadDragger.style.background = '';
                 
-                if (!localUploadStudentSelect.value) {
-                    showToast('请先选择学生', 'warning');
+                if (!currentLocalSelectedStudentId) {
+                    showToast('请先在左侧选择学生', 'warning');
                     return;
                 }
 
@@ -2344,42 +2415,42 @@
             });
 
             localFileInput.addEventListener('change', function(e) {
-                if (!localUploadStudentSelect.value) {
-                    showToast('请先选择学生', 'warning');
+                if (!currentLocalSelectedStudentId) {
+                    showToast('请先在左侧选择学生', 'warning');
                     localFileInput.value = '';
                     return;
                 }
                 if (this.files && this.files.length > 0) {
                     handleLocalFiles(this.files);
                 }
-            });
-            
-            localUploadStudentSelect.addEventListener('change', function(e) {
-                var studentId = e.target.value;
-                if (studentId) {
-                    currentLocalSelectedFiles = studentUploadMap[studentId] || [];
-                } else {
-                    currentLocalSelectedFiles = [];
-                }
-                renderLocalPreviews();
+                // Reset value so same file can be selected again if needed
+                this.value = '';
             });
 
             function handleLocalFiles(files) {
-                var studentId = localUploadStudentSelect.value;
-                if (!studentId) return;
+                if (!currentLocalSelectedStudentId) return;
                 
                 var newFiles = Array.from(files);
-                currentLocalSelectedFiles = currentLocalSelectedFiles.concat(newFiles);
-                studentUploadMap[studentId] = currentLocalSelectedFiles;
+                var currentFiles = studentUploadMap[currentLocalSelectedStudentId] || [];
+                studentUploadMap[currentLocalSelectedStudentId] = currentFiles.concat(newFiles);
                 
                 renderLocalPreviews();
+                renderLocalStudentList(); // Update counts
             }
 
             function renderLocalPreviews() {
-                localUploadPreview.innerHTML = '';
+                var files = studentUploadMap[currentLocalSelectedStudentId] || [];
                 
-                if (currentLocalSelectedFiles.length > 0) {
-                    currentLocalSelectedFiles.forEach(function(file, index) {
+                if (files.length > 0) {
+                    localUploadEmptyTip.style.display = 'none';
+                    // clear existing previews except the empty tip
+                    Array.from(localUploadPreview.children).forEach(function(child) {
+                        if (child.id !== 'local-upload-empty-tip') {
+                            child.remove();
+                        }
+                    });
+                    
+                    files.forEach(function(file, index) {
                         var url = '';
                         if (file.isSample) {
                             url = 'assets/worksheet-preview.png';
@@ -2406,11 +2477,12 @@
                         btn.addEventListener('click', function(e) {
                             e.stopPropagation();
                             var idx = parseInt(this.getAttribute('data-index'), 10);
-                            currentLocalSelectedFiles.splice(idx, 1);
-                            var studentId = localUploadStudentSelect.value;
-                            if (studentId) {
-                                studentUploadMap[studentId] = currentLocalSelectedFiles;
+                            if (currentLocalSelectedStudentId) {
+                                studentUploadMap[currentLocalSelectedStudentId].splice(idx, 1);
+                                renderLocalPreviews();
+                                renderLocalStudentList();
                             }
+
                             renderLocalPreviews();
                         });
                     });
@@ -2428,12 +2500,11 @@
                 
                 if (!hasAnyFile) {
                     // Fill dummy data if none
-                    if (!localUploadStudentSelect.value) {
+                    if (!currentLocalSelectedStudentId) {
                         showToast('请先选择学生并上传作业', 'warning');
                         return;
                     }
-                    var studentId = localUploadStudentSelect.value;
-                    studentUploadMap[studentId] = [
+                    studentUploadMap[currentLocalSelectedStudentId] = [
                         { name: '作业1', type: 'image/png', isSample: true }
                     ];
                 }
