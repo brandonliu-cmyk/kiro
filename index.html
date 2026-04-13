@@ -370,6 +370,20 @@
             overflow: hidden;
             min-height: 420px;
             min-width: 0;
+            position: relative;
+        }
+
+        .image-panel.empty-state {
+            background: transparent;
+            box-shadow: none;
+            border: 2px dashed #d9d9d9;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .image-panel.empty-state .thumbnail-list-container,
+        .image-panel.empty-state .main-preview {
+            display: none;
         }
 
         .thumbnail-list-container {
@@ -1498,7 +1512,18 @@
 
         <!-- Center Column -->
         <section class="center-column">
-            <div class="image-panel">
+            <div class="image-panel" id="image-panel">
+                <!-- 全局空状态提示 (整个中心区域) -->
+                <div id="image-panel-empty-state" style="display: none; flex-direction: column; align-items: center; justify-content: center; width: 100%; height: 100%; color: var(--text-secondary);">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#d9d9d9" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 16px;">
+                        <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                        <polyline points="21 15 16 10 5 21"></polyline>
+                    </svg>
+                    <div style="font-size: 16px; font-weight: 500; color: #595959; margin-bottom: 8px;">该学生暂无作业图片</div>
+                    <div style="font-size: 14px;">请点击右上角的<span style="color: var(--primary-blue); margin: 0 4px;">本地上传作业</span>为该学生上传</div>
+                </div>
+
                 <!-- Thumbnail List Container with Scroll Buttons -->
                 <div class="thumbnail-list-container">
                     <button class="scroll-btn scroll-up" id="btn-scroll-up" aria-label="向上滚动">
@@ -1523,15 +1548,6 @@
                 <div class="main-preview" id="main-preview-area">
                     <div class="main-preview-container" id="main-preview-container">
                         <img id="main-preview-img" src="" alt="暂无作业" style="display: none;">
-                        <div id="main-preview-empty-state" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary); padding: 40px;">
-                            <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#d9d9d9" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 16px;">
-                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                                <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                                <polyline points="21 15 16 10 5 21"></polyline>
-                            </svg>
-                            <div style="font-size: 16px; font-weight: 500; color: #595959; margin-bottom: 8px;">该学生暂无作业图片</div>
-                            <div style="font-size: 14px;">请点击右上角的<span style="color: var(--primary-blue); margin: 0 4px;">本地上传作业</span>为该学生上传</div>
-                        </div>
                         <!-- 批改痕迹将动态插入到这里 -->
                     </div>
                 </div>
@@ -2091,7 +2107,9 @@
                 var src = item.getAttribute('data-src') || (item.querySelector('img') || 0).src;
                 if (mainImg) {
                     mainImg.style.display = '';
-                    var emptyState = document.getElementById('main-preview-empty-state');
+                    var imagePanel = document.getElementById('image-panel');
+                    var emptyState = document.getElementById('image-panel-empty-state');
+                    if (imagePanel) imagePanel.classList.remove('empty-state');
                     if (emptyState) emptyState.style.display = 'none';
                     
                     var existing = document.getElementById('main-preview-multi');
@@ -2146,7 +2164,9 @@
                         selectThumb(nextItem);
                     } else if (mainImg) {
                         mainImg.style.display = 'none';
-                        var emptyState = document.getElementById('main-preview-empty-state');
+                        var imagePanel = document.getElementById('image-panel');
+                        var emptyState = document.getElementById('image-panel-empty-state');
+                        if (imagePanel) imagePanel.classList.add('empty-state');
                         if (emptyState) emptyState.style.display = 'flex';
                     }
                 }
@@ -2259,6 +2279,14 @@
                 var firstThumb = listEl.querySelector('.thumbnail-item');
                 if (firstThumb) {
                     selectThumb(firstThumb);
+                } else {
+                    if (mainImg) {
+                        mainImg.style.display = 'none';
+                        var imagePanel = document.getElementById('image-panel');
+                        var emptyState = document.getElementById('image-panel-empty-state');
+                        if (imagePanel) imagePanel.classList.add('empty-state');
+                        if (emptyState) emptyState.style.display = 'flex';
+                    }
                 }
             }
 
@@ -2291,7 +2319,9 @@
                             }
                             if (mainImg) {
                                 mainImg.style.display = 'none';
-                                var emptyState = document.getElementById('main-preview-empty-state');
+                                var imagePanel = document.getElementById('image-panel');
+                                var emptyState = document.getElementById('image-panel-empty-state');
+                                if (imagePanel) imagePanel.classList.add('empty-state');
                                 if (emptyState) emptyState.style.display = 'flex';
                             }
                             var container = document.getElementById('main-preview-container');
