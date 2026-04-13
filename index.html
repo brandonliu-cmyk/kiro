@@ -2652,12 +2652,22 @@
                         return;
                     }
                     
+                    // Simulate uploading multiple images at once (e.g., 2-4 images)
+                    var numImages = Math.floor(Math.random() * 3) + 2; // 2 to 4 images
+                    var newFiles = [];
                     var currentFiles = studentUploadMap[currentLocalSelectedStudentId] || [];
-                    studentUploadMap[currentLocalSelectedStudentId] = currentFiles.concat([
-                        { name: '手机拍摄作业_' + (currentFiles.length + 1), type: 'image/png', isSample: true }
-                    ]);
                     
-                    showToast('手机端上传成功', 'success');
+                    for (var i = 0; i < numImages; i++) {
+                        newFiles.push({ 
+                            name: '手机拍摄作业_' + (currentFiles.length + i + 1), 
+                            type: 'image/png', 
+                            isSample: true 
+                        });
+                    }
+                    
+                    studentUploadMap[currentLocalSelectedStudentId] = currentFiles.concat(newFiles);
+                    
+                    showToast('手机端上传成功（' + numImages + '张）', 'success');
                     renderLocalPreviews();
                     renderLocalStudentList();
                 });
