@@ -1,0 +1,1730 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>一键创建教学流程 - AI 教学平台</title>
+  <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: { 50:'#EFF6FF',100:'#DBEAFE',200:'#BFDBFE',300:'#93C5FD',400:'#60A5FA',500:'#3B82F6',600:'#2563EB',700:'#1D4ED8',800:'#1E3A8A' },
+            accent: { 400:'#34D399',500:'#10B981',600:'#059669' },
+            warm: { 400:'#FB923C',500:'#F97316',600:'#EA580C' },
+          },
+          fontFamily: { sans: ['"Noto Sans SC"', 'Microsoft YaHei', 'system-ui', 'sans-serif'] },
+          boxShadow: { 'card': '0 8px 32px rgba(59,130,246,0.10), 0 2px 8px rgba(0,0,0,0.06)', 'card-hover': '0 16px 48px rgba(59,130,246,0.15), 0 4px 16px rgba(0,0,0,0.08)' },
+          borderRadius: { 'xl': '12px', '2xl': '16px', '3xl': '24px' },
+        }
+      }
+    }
+  </script>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Noto Sans SC', 'Microsoft YaHei', system-ui, sans-serif; }
+    @keyframes pulse-skeleton { 0%,100%{opacity:0.6} 50%{opacity:1} }
+    .skeleton { animation: pulse-skeleton 1.5s ease-in-out infinite; }
+    @keyframes fadeInUp { from { opacity:0; transform:translateY(18px) } to { opacity:1; transform:translateY(0) } }
+    .animate-in { animation: fadeInUp 0.35s ease-out forwards; }
+    @keyframes shimmer { 0%{background-position:-400px 0} 100%{background-position:400px 0} }
+    .shimmer { background: linear-gradient(90deg,#f0f4ff 25%,#e0e8ff 50%,#f0f4ff 75%); background-size:800px 100%; animation: shimmer 1.8s infinite linear; }
+    @keyframes spin-dot { to{transform:rotate(360deg)} }
+    .spin-dot { animation: spin-dot 0.8s linear infinite; }
+    @keyframes success-pop { 0%{transform:scale(0.8);opacity:0} 70%{transform:scale(1.05)} 100%{transform:scale(1);opacity:1} }
+    .success-pop { animation: success-pop 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+    @keyframes overlay-in { from{opacity:0} to{opacity:1} }
+    .overlay-in { animation: overlay-in 0.25s ease forwards; }
+    ::-webkit-scrollbar { width:6px; }
+    ::-webkit-scrollbar-track { background:#f1f5f9; border-radius:3px; }
+    ::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:3px; }
+    ::-webkit-scrollbar-thumb:hover { background:#94a3b8; }
+  </style>
+</head>
+  <body class="min-h-screen">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef, createContext, useContext } = React;
+
+    // ─── MOCK DATA ────────────────────────────────────────────────────────────
+    const MOCK_DATA = {
+      subject: "语文",
+      chapter: "七年级上册 - 第一单元 -《春》(朱自清)",
+      rawText: `盼望着，盼望着，东风来了，春天的脚步近了。
+一切都像刚睡醒的样子，欣欣然张开了眼。山朗润起来了，水涨起来了，太阳的脸红起来了。
+小草偷偷地从土里钻出来，嫩嫩的，绿绿的。园子里，大街上，一大片一大片满是的。坐着，躺着，打两个滚，踢几脚球，赛几趟跑，捉几回迷藏。风轻悄悄的，草软绵绵的。`,
+      knowledgePoints: [
+        "掌握生字词（朗润、酝酿、黄晕、舒活）及作者简介",
+        "赏析比喻、拟人、排比等修辞手法的表达效果",
+        "学习作者抓住景物特征展开描写、情景交融的写法",
+      ],
+      preClass: {
+        lessonPlan: `【教学目标】
+1. 知识与能力：流利、有感情地朗读课文，把握作者情感脉络。
+2. 过程与方法：学习作者抓住景物特征展开描写、情景交融的写法。
+3. 情感态度与价值观：培养热爱自然、热爱生活的情感。
+
+【教学重难点】
+重点：品味文中优美语言，积累文中的精彩语句。
+难点：赏析比喻、拟人等修辞手法，理解情景交融的写法。
+
+【教学准备】
+多媒体课件、朗读音频、学生预习学案。
+
+【教学方法】
+朗读品味法 · 合作探究法 · 多媒体辅助法
+
+【课时安排】
+2 课时（第一课时：整体感知；第二课时：精读品析）
+
+【教学过程】
+一、创设情境，导入新课
+二、初读课文，整体感知
+三、精读品味，探究赏析
+四、总结全文，升华情感
+
+【板书设计】
+春
+盼春 → 绘春（春草、春花、春风、春雨、迎春） → 赞春
+
+【作业布置】
+1. 背诵并默写课文。
+2. 完成课后练习题。
+
+【教学反思】
+本节课通过多媒体创设情境，激发了学生的学习兴趣...`,
+        studyGuide: `【课前预习指南】
+1. 查阅资料，了解朱自清生平及代表作品（可参考《背影》《荷塘月色》）。
+2. 熟读课文，圈画出生字词，借助工具书标注拼音：
+   朗润（lǎng rùn） 酝酿（yùn niàng） 黄晕（huáng yùn）
+   抖擞（dǒu sǒu） 舒活（shū huó）
+3. 思考：作者描绘了哪几幅"春天的图画"？试着用小标题概括。
+4. 找出文中你认为写得最美的一个句子，准备课堂分享。`,
+      },
+      inClassTools: [
+        { id: 't1', name: '课件', icon: 'PPT', color: 'from-blue-500 to-blue-600' },
+        { id: 't2', name: '教案', icon: 'DOC', color: 'from-slate-500 to-slate-600' },
+        { id: 't3', name: '学案', icon: 'DOC', color: 'from-slate-400 to-slate-500' },
+        { id: 't4', name: '课堂活动', icon: 'GAME', color: 'from-purple-500 to-purple-600' },
+        { id: 't5', name: '智能听写', icon: 'AUDIO', color: 'from-cyan-500 to-cyan-600' },
+        { id: 't6', name: 'AI绘本', icon: 'BOOK', color: 'from-pink-500 to-pink-600' },
+        { id: 't7', name: '口语测评', icon: 'MIC', color: 'from-orange-500 to-orange-600' },
+        { id: 't8', name: '趣味抽奖', icon: 'GIFT', color: 'from-amber-500 to-amber-600' },
+        { id: 't9', name: '随堂测', icon: 'TEST', color: 'from-emerald-500 to-emerald-600' },
+        { id: 't10', name: '智能批改', icon: 'CHECK', color: 'from-teal-500 to-teal-600' },
+        { id: 't11', name: '布置作业', icon: 'EDIT', color: 'from-rose-500 to-rose-600' },
+      ],
+      postClassHomework: {
+        A: {
+          level: "基础层 (A 层)",
+          label: "A",
+          labelBg: "bg-blue-100 text-blue-700",
+          badge: "🌱 夯实基础",
+          target: "打基础，树信心",
+          method: "演示性探究",
+          color: "border-blue-300 bg-blue-50",
+          tagColor: "bg-blue-500",
+          tasks: [
+            "抄写本课生字词 3 遍（朗润、酝酿、黄晕、抖擞、舒活），注意书写规范；",
+            "跟着 AI 范读音频，流利朗读全文并录音上传至班级空间；",
+            "匹配连线题：将 5 个段落标题与对应的春景图连线（电子版学案完成）；",
+            "背诵并默写课文第一自然段。",
+          ],
+        },
+        B: {
+          level: "提高层 (B 层)",
+          label: "B",
+          labelBg: "bg-amber-100 text-amber-700",
+          badge: "⚡ 能力提升",
+          target: "促内化，立发展",
+          method: "导向性探究",
+          color: "border-amber-300 bg-amber-50",
+          tagColor: "bg-amber-500",
+          tasks: [
+            "赏析句子：'春风图'中运用了哪些感官来描写春风？请结合原文写出你的理解（不少于 150 字）；",
+            "完成《春》课内阅读理解基础测试题 5 道（电子学案）；",
+            "摘抄文中你最喜欢的两个比喻句，并仿写一个。",
+          ],
+        },
+        C: {
+          level: "发展层 (C 层)",
+          label: "C",
+          labelBg: "bg-purple-100 text-purple-700",
+          badge: "🚀 拓展创新",
+          target: "抓创新，出成绩",
+          method: "自主性探究",
+          color: "border-purple-300 bg-purple-50",
+          tagColor: "bg-purple-500",
+          tasks: [
+            "拓展阅读朱自清《绿》，比较《春》与《绿》在写景抒情上的异同（制作对比表格）；",
+            "仿写练习：运用至少两种修辞手法，写一段 200 字左右的'秋天的景物'描写，题目自拟；",
+            "选做挑战：尝试为《春》创作一幅插画或思维导图，上传至班级展示区。",
+          ],
+        },
+      },
+      tutoring: [
+        {
+          student: "张同学",
+          tag: "基础薄弱",
+          tagBg: "bg-red-100 text-red-600",
+          avatar: "👦",
+          detection: "系统检测到生字词听写正确率仅 38%，近义词辨析题错误较多",
+          push: "✅ 已推送微课视频《10分钟攻克初一易错字》，并将本次错题自动加入个人错题本，每周五复习提醒。",
+          effect: "预计 2 周后听写正确率提升至 85%+",
+        },
+        {
+          student: "李同学",
+          tag: "学有余力",
+          tagBg: "bg-emerald-100 text-emerald-600",
+          avatar: "👧",
+          detection: "系统检测到 B 层作业全部正确，且用时仅为班级平均时间的 40%，正确率 100%",
+          push: "🏆 已解锁隐藏成就，优先推送名师赏析讲座《跟朱自清学写散文》（进阶选修）；建议挑战 C 层拓展任务。",
+          effect: "持续挑战将纳入综合素养评价加分",
+        },
+      ],
+    };
+
+    // ─── 课程目录（Mock）：按「教材版本 + 年级册别」切换 ───────────────────────
+    const TEXTBOOK_VERSIONS = [
+      { id: 'bb', name: '部编版（统编）' },
+      { id: 'rj', name: '人教版' },
+      { id: 'sj', name: '苏教版' },
+    ];
+
+    const GRADE_VOLUMES = [
+      { id: 'g6x', label: '六年级 · 下册' },
+      { id: 'g6s', label: '六年级 · 上册' },
+      { id: 'g7s', label: '七年级 · 上册' },
+    ];
+
+    /** 部编版 · 六年级下册 — 目录依据课本结构整理（演示用） */
+    const CATALOG_BB_G6X = [
+      {
+        id: 'u1',
+        title: '第一单元',
+        children: [
+          { id: 'u1-1', title: '1 北京的春节', page: 'P.2', kind: 'lesson' },
+          { id: 'u1-2', title: '2 腊八粥', page: 'P.8', kind: 'lesson' },
+          {
+            id: 'u1-3',
+            title: '3 古诗三首',
+            page: 'P.11',
+            kind: 'lesson',
+            optional: false,
+            children: [
+              { id: 'u1-3a', title: '寒食', page: 'P.11', kind: 'sub' },
+              { id: 'u1-3b', title: '迢迢牵牛星', page: 'P.11', kind: 'sub' },
+              { id: 'u1-3c', title: '十五夜望月', page: 'P.12', kind: 'sub' },
+            ],
+          },
+          { id: 'u1-4', title: '4 藏戏', page: 'P.13', kind: 'lesson', star: true },
+          { id: 'u1-o1', title: '口语交际：即兴发言', page: 'P.15', kind: 'oral' },
+          { id: 'u1-w1', title: '习作：家乡的风俗', page: 'P.16', kind: 'writing' },
+          { id: 'u1-g1', title: '语文园地', page: 'P.17', kind: 'garden' },
+        ],
+      },
+      {
+        id: 'u2',
+        title: '第二单元',
+        children: [
+          { id: 'u2-5', title: '5 鲁滨逊漂流记（节选）', page: 'P.20', kind: 'lesson' },
+          { id: 'u2-6', title: '6 骑鹅旅行记（节选）', page: 'P.27', kind: 'lesson', star: true },
+          { id: 'u2-7', title: '7 汤姆·索亚历险记（节选）', page: 'P.33', kind: 'lesson', star: true },
+          { id: 'u2-o1', title: '口语交际：同读一本书', page: 'P.37', kind: 'oral' },
+          { id: 'u2-w1', title: '习作：写作品梗概', page: 'P.38', kind: 'writing' },
+          { id: 'u2-g1', title: '语文园地', page: 'P.39', kind: 'garden' },
+          { id: 'u2-r1', title: '快乐读书吧：漫步世界名著花园', page: 'P.41', kind: 'reading' },
+        ],
+      },
+      {
+        id: 'u3',
+        title: '第三单元',
+        children: [
+          { id: 'u3-8', title: '8 匆匆', page: 'P.44', kind: 'lesson' },
+          { id: 'u3-9', title: '9 那个星期天', page: 'P.46', kind: 'lesson' },
+          { id: 'u3-s0', title: '习作例文', page: '', kind: 'sampleGroup', children: [
+            { id: 'u3-s1', title: '别了，语文课', page: 'P.51', kind: 'sample' },
+            { id: 'u3-s2', title: '阳光的两种用法', page: 'P.54', kind: 'sample' },
+          ]},
+          { id: 'u3-w1', title: '习作：让真情自然流露', page: 'P.56', kind: 'writing' },
+        ],
+      },
+      {
+        id: 'u4',
+        title: '第四单元',
+        children: [
+          {
+            id: 'u4-10',
+            title: '10 古诗三首',
+            page: 'P.58',
+            kind: 'lesson',
+            children: [
+              { id: 'u4-10a', title: '马诗', page: 'P.58', kind: 'sub' },
+              { id: 'u4-10b', title: '石灰吟', page: 'P.58', kind: 'sub' },
+              { id: 'u4-10c', title: '竹石', page: 'P.59', kind: 'sub' },
+            ],
+          },
+          { id: 'u4-11', title: '11 十六年前的回忆', page: 'P.60', kind: 'lesson' },
+          { id: 'u4-12', title: '12 为人民服务', page: 'P.62', kind: 'lesson' },
+          { id: 'u4-13', title: '13 董存瑞舍身炸暗堡', page: 'P.65', kind: 'lesson', star: true },
+          { id: 'u4-p1', title: '综合性学习：奋斗的历程', page: 'P.68', kind: 'project' },
+          { id: 'u4-g1', title: '语文园地', page: 'P.73', kind: 'garden' },
+        ],
+      },
+      {
+        id: 'u5',
+        title: '第五单元',
+        children: [
+          { id: 'u5-14', title: '14 文言文二则', page: 'P.76', kind: 'lesson', children: [
+            { id: 'u5-14a', title: '学弈', page: 'P.76', kind: 'sub' },
+            { id: 'u5-14b', title: '两小儿辩日', page: 'P.77', kind: 'sub' },
+          ]},
+          { id: 'u5-15', title: '15 表里的生物', page: 'P.79', kind: 'lesson' },
+          { id: 'u5-16', title: '16 他们那时候多有趣啊', page: 'P.85', kind: 'lesson', star: true },
+          { id: 'u5-o1', title: '口语交际：辩论', page: 'P.89', kind: 'oral' },
+          { id: 'u5-w1', title: '习作：插上科学的翅膀飞', page: 'P.90', kind: 'writing' },
+          { id: 'u5-g1', title: '语文园地', page: 'P.91', kind: 'garden' },
+        ],
+      },
+      {
+        id: 'u6',
+        title: '第六单元 · 古诗词诵读',
+        children: [
+          { id: 'u6-1', title: '采薇（节选）', page: 'P.96', kind: 'poem' },
+          { id: 'u6-2', title: '送元二使安西', page: 'P.97', kind: 'poem' },
+          { id: 'u6-3', title: '春夜喜雨', page: 'P.98', kind: 'poem' },
+          { id: 'u6-4', title: '早春呈水部张十八员外', page: 'P.99', kind: 'poem' },
+          { id: 'u6-5', title: '江上渔者', page: 'P.100', kind: 'poem' },
+          { id: 'u6-6', title: '泊船瓜洲', page: 'P.101', kind: 'poem' },
+          { id: 'u6-7', title: '游园不值', page: 'P.102', kind: 'poem' },
+          { id: 'u6-8', title: '卜算子·送鲍浩然之浙东', page: 'P.103', kind: 'poem' },
+          { id: 'u6-9', title: '浣溪沙', page: 'P.104', kind: 'poem' },
+          { id: 'u6-10', title: '清平乐·春归何处', page: 'P.105', kind: 'poem' },
+        ],
+      },
+    ];
+
+    const CATALOG_MOCK_FALLBACK = [
+      {
+        id: 'demo-u1',
+        title: '第一单元（示例）',
+        children: [
+          { id: 'demo-1', title: '1 示例课文 A', page: 'P.1', kind: 'lesson' },
+          { id: 'demo-2', title: '2 示例课文 B', page: 'P.5', kind: 'lesson' },
+          { id: 'demo-o', title: '口语交际：示例主题', page: 'P.8', kind: 'oral' },
+          { id: 'demo-w', title: '习作：示例题目', page: 'P.9', kind: 'writing' },
+          { id: 'demo-g', title: '语文园地', page: 'P.10', kind: 'garden' },
+        ],
+      },
+    ];
+
+    function getCatalogTree(versionId, gradeVolumeId) {
+      if (versionId === 'bb' && gradeVolumeId === 'g6x') return CATALOG_BB_G6X;
+      return CATALOG_MOCK_FALLBACK;
+    }
+
+    function pickFirstLeafInNodes(nodes, parentGroup = null) {
+      if (!nodes || !nodes.length) return null;
+      for (const n of nodes) {
+        if (n.children && n.children.length) {
+          const inner = pickFirstLeafInNodes(n.children, n);
+          if (inner) return inner;
+        } else return { node: n, parentGroup };
+      }
+      return null;
+    }
+
+    function pickFirstLeafFromTree(tree) {
+      for (const unit of tree) {
+        const res = pickFirstLeafInNodes(unit.children, null);
+        if (res) return { node: res.node, unitTitle: unit.title, unitId: unit.id, parentGroup: res.parentGroup };
+      }
+      return { node: null, unitTitle: '', unitId: '', parentGroup: null };
+    }
+
+    function buildExpandedDefaults(versionId, gradeVolumeId) {
+      const tree = getCatalogTree(versionId, gradeVolumeId);
+      const s = new Set(tree.map((u) => u.id));
+      if (versionId === 'bb' && gradeVolumeId === 'g6x') {
+        ['u1-3', 'u4-10', 'u5-14', 'u3-s0'].forEach((id) => s.add(id));
+      }
+      return s;
+    }
+
+    function formatCatalogLessonLine(gradeVolumeId, unitTitle, node) {
+      const gv = GRADE_VOLUMES.find((g) => g.id === gradeVolumeId)?.label || '';
+      const page = node.page ? ` ${node.page}` : '';
+      return `${gv} · ${unitTitle} · ${node.title}${page}`;
+    }
+
+    // ─── ICONS ───────────────────────────────────────────────────────────────
+    const Icons = {
+      PPT: () => <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M3 3h12v2H3V3zm0 4h7v2H3V7zm0 4h12v2H3v-2zm0 4h7v2H3v-2zm0 4h12v2H3v-2z"/></svg>,
+      DOC: () => <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM6 20V4h6v6h6v10H6z"/></svg>,
+      GAME: () => <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M21 6H3a1 1 0 00-1 1v10a1 1 0 001 1h18a1 1 0 001-1V7a1 1 0 00-1-1zm-1 10H4V8h16v8zM7.5 12a1.5 1.5 0 110-3 1.5 1.5 0 010 3zm9 0a1.5 1.5 0 110-3 1.5 1.5 0 010 3zM8 16l3-3-1.5-1.5L8 13v3z"/></svg>,
+      AUDIO: () => <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M12 3a9 9 0 100 18 9 9 0 000-18zm0 2a7 7 0 110 14A7 7 0 0112 5zm-1 2v4l3 1.5-.5 1-3.5-2V7h1z"/></svg>,
+      BOOK: () => <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M4 19.5A2.5 2.5 0 016.5 17H20a1 1 0 001-1V5a1 1 0 00-1-1H6.5A2.5 2.5 0 004 6.5v13zm2-13h12v11H6V6.5z"/></svg>,
+      MIC: () => <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M12 14a3 3 0 003-3V5a3 3 0 10-6 0v6a3 3 0 003 3zm5-3a5 5 0 01-10 0H5a7 7 0 0014 0h-2z"/></svg>,
+      GIFT: () => <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M20 6h-2.18a3.5 3.5 0 00-3.32-2.5A3.5 3.5 0 009.5 6H7.18A3 3 0 003 9v3h2v2h14v-2h2V9a3 3 0 00-3-3zM11 18h2v2h-2v-2zm-4 0h2v2H7v-2zm8 0h2v2h-2v-2zm-2-4H7V9h10v5z"/></svg>,
+      TEST: () => <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M4 4h16v2H4V4zm2 4h12v2H6V8zm3 4h6v2H9v-2zm3 4h0v2h-2v-2zm-5 0h0v2H7v-2z"/></svg>,
+      CHECK: () => <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>,
+      EDIT: () => <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>,
+      AI: () => <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M12 2a2 2 0 012 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 017 7h1a1 1 0 011 1v3a1 1 0 01-1 1h-1v1a2 2 0 01-2 2H5a2 2 0 01-2-2v-1H2a1 1 0 01-1-1v-3a1 1 0 011-1h1a7 7 0 017-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 012-2M7.5 13A2.5 2.5 0 005 15.5 2.5 2.5 0 007.5 18a2.5 2.5 0 002.5-2.5A2.5 2.5 0 007.5 13m9 0a2.5 2.5 0 00-2.5 2.5 2.5 2.5 0 002.5 2.5 2.5 2.5 0 002.5-2.5 2.5 2.5 0 00-2.5-2.5z"/></svg>,
+      CHECK_CIRCLE: () => <svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>,
+      SPARKLE: () => <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8L12 2z"/></svg>,
+      SEND: () => <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M2 21l21-9L2 3v7l15 2-15 2v7z"/></svg>,
+      ARROW_RIGHT: () => <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8-8-8z"/></svg>,
+      ARROW_LEFT: () => <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>,
+      ROCKET: () => <svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93s3.05-7.44 7-7.93v15.86zm2-15.86c3.94.49 7 3.85 7 7.93s-3.05 7.44-7 7.93V4.07z"/></svg>,
+      CLOCK: () => <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67V7z"/></svg>,
+      STUDENT: () => <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M12 4a4 4 0 100 8 4 4 0 000-8zM6 8a6 6 0 1112 0A6 6 0 016 8zm2 10a2 2 0 00-2 2v1a1 1 0 001 1h6a1 1 0 001-1v-1a2 2 0 00-2-2H8z"/></svg>,
+      BULB: () => <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17a1 1 0 001 1h6a1 1 0 001-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7z"/></svg>,
+      GRID: () => <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M3 3h8v8H3V3zm0 10h8v8H3v-8zm10-10h8v8h-8V3zm0 10h8v8h-8v-8z"/></svg>,
+      LAYERS: () => <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M11.99 18.54l-7.37-5.73L3 14.07l9 7 9-7-1.63-1.27-7.38 5.74zM12 16l7.36-5.73L21 9l-9-7-9 7 1.63 1.27L12 16z"/></svg>,
+      AVATAR: () => <svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>,
+      BELL: () => <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M12 22c1.1 0 2-.9 2-2h-4a2 2 0 002 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2zm-2 1H8v-6c0-2.48 1.51-4.5 4-4.5s4 2.02 4 4.5v6z"/></svg>,
+      MENU: () => <svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>,
+      HOME: () => <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>,
+      DOCS: () => <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM6 20V4h6v6h6v10H6z"/></svg>,
+      CHART: () => <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>,
+      SETTINGS: () => <svg viewBox="0 0 24 24" fill="currentColor" class="w-5 h-5"><path d="M19.14 12.94c.04-.31.06-.63.06-.94 0-.31-.02-.63-.06-.94l2.03-1.58a.49.49 0 00.12-.61l-1.92-3.32a.49.49 0 00-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 00-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.49.49 0 00-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.49.49 0 00-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6A3.6 3.6 0 118.4 12 3.6 3.6 0 0112 15.6z"/></svg>,
+      CLOSE: () => <svg viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>,
+      CHEVRON_RIGHT: () => <svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>,
+      CHEVRON_DOWN: () => <svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>,
+      FOLDER: () => <svg viewBox="0 0 24 24" fill="currentColor" class="w-4 h-4"><path d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>,
+    };
+
+    // ─── UTILITY COMPONENTS ──────────────────────────────────────────────────
+    function SkeletonLine({ width = "100%", height = "16px", className = "" }) {
+      return <div className={`shimmer rounded ${className}`} style={{ width, height }} />;
+    }
+
+    function LoadingSpinner({ size = 24, color = "border-blue-500" }) {
+      return (
+        <div className={`w-${size/4} h-${size/4} border-2 border-gray-200 border-t-${color.replace('border-','')} rounded-full spin-dot`} 
+             style={{ width: size, height: size, borderTopColor: '#3B82F6', borderColor: '#E5E7EB' }} />
+      );
+    }
+
+    function catalogKindPrefix(kind) {
+      if (kind === 'oral' || kind === 'writing') return '◎ ';
+      if (kind === 'reading') return '📚 ';
+      if (kind === 'garden') return '🌿 ';
+      if (kind === 'project') return '◇ ';
+      if (kind === 'sample' || kind === 'sampleGroup') return '◇ ';
+      if (kind === 'poem') return '◆ ';
+      return '';
+    }
+
+    function CatalogTreeRows({ units, unit, depth, expandedIds, onToggle, selectedId, onSelectLeaf, parentGroupNode = null }) {
+      return units.map((node) => {
+        const hasChildren = node.children && node.children.length;
+        const isOpen = !hasChildren || expandedIds.has(node.id);
+        const prefix = catalogKindPrefix(node.kind);
+        const star = node.star ? <span className="text-amber-500"> *</span> : null;
+        return (
+          <React.Fragment key={node.id}>
+            <button
+              type="button"
+              className={`w-full flex items-start gap-1 py-1.5 pr-1 rounded-lg text-left transition ${
+                selectedId === node.id
+                  ? 'bg-blue-50 text-blue-900'
+                  : 'text-gray-600 hover:bg-gray-50'
+              }`}
+              style={{ paddingLeft: 6 + depth * 12 }}
+              onClick={() => {
+                if (hasChildren) onToggle(node.id);
+                else onSelectLeaf(node, unit, parentGroupNode);
+              }}
+            >
+              <span
+                className="text-gray-400 flex-shrink-0 w-4 h-4 flex items-center justify-center mt-0.5"
+                onClick={(e) => {
+                  if (!hasChildren) return;
+                  e.stopPropagation();
+                  onToggle(node.id);
+                }}
+              >
+                {hasChildren ? (isOpen ? <Icons.CHEVRON_DOWN /> : <Icons.CHEVRON_RIGHT />) : <span className="w-1 h-1 rounded-full bg-gray-300 inline-block" />}
+              </span>
+              <span className="text-xs leading-snug flex-1 min-w-0">
+                <span className="text-amber-600">{prefix}</span>
+                {node.title}
+                {star}
+                {node.page ? <span className="text-gray-400 ml-1">{node.page}</span> : null}
+              </span>
+            </button>
+            {hasChildren && isOpen ? (
+              <CatalogTreeRows
+                units={node.children}
+                unit={unit}
+                depth={depth + 1}
+                expandedIds={expandedIds}
+                onToggle={onToggle}
+                selectedId={selectedId}
+                onSelectLeaf={onSelectLeaf}
+                parentGroupNode={node}
+              />
+            ) : null}
+          </React.Fragment>
+        );
+      });
+    }
+
+    function CourseCatalogSidebar({
+      versionId,
+      gradeVolumeId,
+      onVersionChange,
+      onGradeVolumeChange,
+      expandedIds,
+      onToggleExpand,
+      selectedLeafId,
+      onSelectLeaf,
+      collapsed,
+      onToggleCollapse,
+    }) {
+      const tree = getCatalogTree(versionId, gradeVolumeId);
+      const vName = TEXTBOOK_VERSIONS.find((v) => v.id === versionId)?.name || '';
+      const gv = GRADE_VOLUMES.find((g) => g.id === gradeVolumeId)?.label || '';
+
+      return (
+        <aside className={`relative flex-shrink-0 self-start transition-all duration-300 ${collapsed ? 'w-[44px]' : 'w-[220px]'}`}>
+          {/* 悬浮主体 */}
+          <div className={`bg-white border border-gray-200 rounded-xl shadow-sm flex flex-col overflow-hidden transition-all duration-300 ${collapsed ? 'h-[44px]' : 'max-h-[calc(100vh-6rem)]'}`}>
+            {/* 标题栏 — 始终可见 */}
+            <div className={`flex items-center gap-2 h-11 px-3 border-b border-gray-100 flex-shrink-0 ${collapsed ? 'justify-center' : ''}`}>
+              {!collapsed && <Icons.BOOK />}
+              <span className={`text-xs font-medium text-gray-700 ${collapsed ? 'hidden' : ''}`}>课程目录</span>
+              <button
+                type="button"
+                onClick={onToggleCollapse}
+                className={`ml-auto p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition flex-shrink-0`}
+                title={collapsed ? '展开目录' : '收起目录'}
+              >
+                {collapsed ? <Icons.CHEVRON_RIGHT /> : <Icons.CHEVRON_DOWN />}
+              </button>
+            </div>
+
+            {/* 折叠时仅显示小图标 */}
+            {collapsed ? (
+              <div className="flex flex-col items-center py-2 gap-2">
+                <div className="w-5 h-5 rounded bg-gray-100" />
+                <div className="w-5 h-5 rounded bg-gray-100" />
+                <div className="w-5 h-5 rounded bg-gray-100" />
+              </div>
+            ) : (
+              <>
+                {/* 版本 + 年级选择 */}
+                <div className="px-3 pt-2.5 pb-2 space-y-2 border-b border-gray-100 flex-shrink-0">
+                  <div className="space-y-1">
+                    <label className="text-xs text-gray-500">教材版本</label>
+                    <select
+                      value={versionId}
+                      onChange={(e) => onVersionChange(e.target.value)}
+                      className="w-full text-xs px-3 py-2 rounded-lg bg-gray-100 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer"
+                    >
+                      {TEXTBOOK_VERSIONS.map((v) => (
+                        <option key={v.id} value={v.id}>{v.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="space-y-1">
+                    <label className="text-xs text-gray-500">年级 / 册别</label>
+                    <select
+                      value={gradeVolumeId}
+                      onChange={(e) => onGradeVolumeChange(e.target.value)}
+                      className="w-full text-xs px-3 py-2 rounded-lg bg-gray-100 text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-400 cursor-pointer"
+                    >
+                      {GRADE_VOLUMES.map((g) => (
+                        <option key={g.id} value={g.id}>{g.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <p className="text-xs text-gray-400">{vName} · {gv}</p>
+                </div>
+
+                {/* 目录树 — 可滚动 */}
+                <div className="flex-1 overflow-y-auto py-2 px-2">
+                  {tree.map((unit) => (
+                    <div key={unit.id} className="mb-1.5">
+                      <button
+                        type="button"
+                        className="w-full flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-left text-xs font-medium text-gray-700 hover:bg-gray-100 transition"
+                        onClick={() => onToggleExpand(unit.id)}
+                      >
+                        <span className="text-blue-500 flex-shrink-0">
+                          {expandedIds.has(unit.id) ? <Icons.CHEVRON_DOWN /> : <Icons.CHEVRON_RIGHT />}
+                        </span>
+                        <Icons.FOLDER />
+                        <span className="truncate">{unit.title}</span>
+                      </button>
+                      {expandedIds.has(unit.id) && unit.children ? (
+                        <div className="mt-0.5 ml-2">
+                          <CatalogTreeRows
+                            units={unit.children}
+                            unit={unit}
+                            depth={0}
+                            expandedIds={expandedIds}
+                            onToggle={onToggleExpand}
+                            selectedId={selectedLeafId}
+                            onSelectLeaf={onSelectLeaf}
+                            parentGroupNode={null}
+                          />
+                        </div>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
+        </aside>
+      );
+    }
+
+    // ─── 课本图片映射：单元ID → 图片信息列表 ──────────────────────────────
+    // 图片存放于 book/ 目录，文件名与课文名称对应
+    const BOOK_IMAGES = [
+      // 第一单元
+      { unitId: 'u1', name: '北京的春节',  files: ['北京的春天1.png', '北京的春天2.png', '北京的春天3.png', '北京的春天4.png', '北京的春天5.png', '北京的春天6.png'] },
+      { unitId: 'u1', name: '腊八粥',      files: ['腊八粥1.png', '腊八粥2.png', '腊八粥3.png'] },
+      { unitId: 'u1', name: '古诗三首',     files: ['古诗三首1.png', '古诗三首2.png'] },
+      { unitId: 'u1', name: '藏戏',         files: ['藏戏1.png', '藏戏2.png'] },
+      { unitId: 'u1', name: '口语交际',     files: ['口语交际.png'] },
+      { unitId: 'u1', name: '习作',         files: ['习作.png'] },
+      { unitId: 'u1', name: '语文园地',     files: ['语文田地1.png', '语文田地2.png'] },
+      // 第二单元
+      { unitId: 'u2', name: '鲁滨逊漂流记',  files: [] },
+      { unitId: 'u2', name: '骑鹅旅行记',   files: [] },
+      { unitId: 'u2', name: '汤姆·索亚历险记', files: [] },
+      { unitId: 'u2', name: '口语交际',     files: [] },
+      { unitId: 'u2', name: '习作',          files: [] },
+      { unitId: 'u2', name: '快乐读书吧',    files: [] },
+      // 第三单元
+      { unitId: 'u3', name: '匆匆',         files: [] },
+      { unitId: 'u3', name: '那个星期天',   files: [] },
+      { unitId: 'u3', name: '习作',          files: [] },
+      // 第四单元
+      { unitId: 'u4', name: '古诗三首',     files: [] },
+      { unitId: 'u4', name: '十六年前的回忆', files: [] },
+      { unitId: 'u4', name: '为人民服务',   files: [] },
+      { unitId: 'u4', name: '董存瑞舍身炸暗堡', files: [] },
+      { unitId: 'u4', name: '综合性学习',   files: [] },
+      // 第五单元
+      { unitId: 'u5', name: '文言文二则',   files: [] },
+      { unitId: 'u5', name: '表里的生物',    files: [] },
+      { unitId: 'u5', name: '他们那时候多有趣啊', files: [] },
+      { unitId: 'u5', name: '口语交际',      files: [] },
+      { unitId: 'u5', name: '习作',          files: [] },
+      // 第六单元
+      { unitId: 'u6', name: '古诗词诵读',   files: [] },
+    ];
+
+    const BOOK_IMG_DIR = 'book';
+
+    /** 目录标题 → 与 book/ 下映射的课文名对齐 */
+    function normalizeCatalogTitleForBook(raw) {
+      if (!raw) return '';
+      let t = raw.replace(/^\d+\s+/, '').trim();
+      t = t.replace(/（[^）]*）/g, '').trim();
+      return t;
+    }
+
+    /** 当前选中目录节点对应哪条课文（子课文用父篇名，如「寒食」→「古诗三首」） */
+    function getLessonKeyForImages(node, parentGroupNode) {
+      if (!node) return '';
+      if ((node.kind === 'sub' || node.kind === 'sample') && parentGroupNode) {
+        return normalizeCatalogTitleForBook(parentGroupNode.title);
+      }
+      if (node.kind === 'oral' || node.kind === 'writing' || node.kind === 'reading') {
+        const p = node.title.split('：')[0];
+        return (p || node.title).trim();
+      }
+      if (node.kind === 'project') {
+        const p = node.title.split('：')[0];
+        return (p || node.title).trim();
+      }
+      return normalizeCatalogTitleForBook(node.title);
+    }
+
+    function getLessonKeyForKnowledgePoints(node, parentGroupNode) {
+      if (!node) return '';
+      if (node.kind === 'sub' && parentGroupNode) {
+        return normalizeCatalogTitleForBook(parentGroupNode.title);
+      }
+      return normalizeCatalogTitleForBook(node.title);
+    }
+
+    function getImagesForLesson(lessonTitle, unitId) {
+      const entry = BOOK_IMAGES.find((e) => e.name === lessonTitle && e.unitId === unitId);
+      if (!entry || !entry.files.length) return [];
+      return entry.files.map((f) => ({ name: entry.name, src: `${BOOK_IMG_DIR}/${f}` }));
+    }
+
+    function getBookImagesForCatalogNode(node, parentGroupNode, catalogUnitId) {
+      const key = getLessonKeyForImages(node, parentGroupNode);
+      return getImagesForLesson(key, catalogUnitId || '');
+    }
+
+    const DETAILED_KNOWLEDGE_POINTS = {
+      '北京的春节': `# 《北京的春节》教辅级知识点明细
+## 一、文学常识（高频考点）
+### 1. 作者信息
+**老舍**（1899—1966），原名舒庆春，字舍予，满族，北京人。中国现代著名作家、人民艺术家，曾获“人民艺术家”称号。
+### 2. 代表作品
+长篇小说：《骆驼祥子》《四世同堂》；话剧：《茶馆》《龙须沟》；散文：《济南的冬天》《趵突泉》等。
+### 3. 写作背景与体裁特点
+- **写作背景**：本文是老舍于1951年创作的一篇回忆性散文，生动展现了老北京春节的民俗风情，表达了对传统文化的喜爱与传承。
+- **体裁特点**：属于叙事散文，以时间为线索，详细描写了北京春节的习俗，语言口语化、富有“京味儿”。
+### 4. 文章核心主旨
+文章按照时间顺序，详细描绘了老北京从腊八到正月十九过春节的热闹场景，展现了春节的民俗风情，表达了对传统文化的热爱与对生活的赞美。
+
+## 二、生字词汇（基础必备）
+### 1. 重点生字表
+| 生字 | 拼音 | 部首 | 核心组词 | 易错提醒/形近字辨析 |
+|---|---|---|---|---|
+| 醋   | cù   | 酉   | 陈醋、米醋、吃醋 | 形近字：酷（kù，残酷） |
+| 饺   | jiǎo | 饣   | 饺子、水饺、蒸饺 | 形近字：绞（jiǎo，绞刑）、狡（jiǎo，狡猾） |
+| 摊   | tān  | 扌   | 摊位、摆摊、摊牌 | 形近字：滩（tān，沙滩）、瘫（tān，瘫痪） |
+| 拌   | bàn  | 扌   | 搅拌、凉拌、杂拌儿 | 形近字：绊（bàn，绊倒）、伴（bàn，伙伴） |
+| 筝   | zhēng| 竹   | 风筝、古筝、断线风筝 | 注意“竹”字头写法，形近字：挣（zhēng，挣扎）、睁（zhēng，睁眼） |
+| 眨   | zhǎ  | 目   | 眨眼、眨巴 | 形近字：泛（fàn，广泛）、贬（biǎn，贬低） |
+| 宵   | xiāo | 宀   | 元宵、通宵、宵夜 | 形近字：霄（xiāo，云霄）、消（xiāo，消失） |
+| 燃   | rán  | 火   | 燃烧、点燃、燃放 | 形近字：然（rán，然后）、染（rǎn，染色） |
+| 咸   | xián | 口   | 咸菜、咸淡、咸鱼 | 形近字：喊（hǎn，喊叫）、减（jiǎn，减少） |
+| 贩   | fàn  | 贝   | 小贩、贩卖、摊贩 | 形近字：返（fǎn，返回）、饭（fàn，吃饭） |
+| 彼   | bǐ   | 彳   | 彼此、彼岸、知己知彼 | 形近字：波（bō，波浪）、坡（pō，山坡） |
+| 贺   | hè   | 贝   | 祝贺、贺年、贺卡 | 形近字：架（jià，书架）、驾（jià，驾驶） |
+| 轿   | jiào | 车   | 轿车、花轿、轿子 | 形近字：桥（qiáo，桥梁）、侨（qiáo，华侨） |
+| 骆   | luò  | 马   | 骆驼、骆宾王 | 注意“马”字旁写法，形近字：络（luò，网络）、洛（luò，洛阳） |
+| 驼   | tuó  | 马   | 骆驼、驼背 | 形近字：陀（tuó，陀螺）、鸵（tuó，鸵鸟） |
+
+### 2. 重点词语解释
+- **零七八碎儿**：指各种零碎的小东西。结合语境：文中指孩子们喜欢吃的各种杂拌儿，体现了春节的热闹与孩子们的欢喜。
+- **万象更新**：事物或景象改换了样子，出现了一番新气象。结合语境：指大人们给孩子做新鞋新衣，准备过年用品，呈现出新年的新气象。
+- **美其名曰**：给予一个好听的名字（多指贬义，文中为中性）。结合语境：指人们将焚化灶王纸像的行为称为“送灶王上天”。
+- **灯火通宵**：整夜都点着灯。结合语境：描绘了除夕之夜家家户户灯火通明的热闹场景。
+- **守岁**：农历除夕晚上不睡觉，直到天亮，以迎接新年的到来。结合语境：体现了人们对新年的重视与期待。
+- **截然不同**：形容两件事物毫无共同之处。结合语境：突出了初一与除夕的不同光景，初一全城休息，除夕热闹非凡。
+- **悬灯结彩**：挂着灯笼，系着彩绸，形容节日或喜庆场面的繁华热闹。结合语境：描绘了元宵节大街上的热闹景象。
+- **独出心裁**：原指诗文的构思有独到的地方，后泛指想出的办法与众不同。结合语境：指干果店制作冰灯或麦苗长龙的创意。
+- **残灯末庙**：指农历正月十九，春节的最后一个节日，比喻事情接近尾声。结合语境：表明春节即将结束。
+
+## 三、课文结构分析
+本文以**时间为线索**，按照“腊八→小年（腊月二十三）→除夕→初一→初六→元宵→正月十九”的顺序展开，分为以下部分：
+| 段落范围 | 时间段 | 主要内容 | 情感/作用说明 |
+|---|---|---|---|
+| 第①段 | 腊月的初旬（腊八） | 描写腊八节熬腊八粥、泡腊八蒜的习俗 | 体现春节的开始与人们的迎春热情 |
+| 第②段 | 腊八之后到腊月二十三 | 铺户加紧上货，街上增加货摊子，孩子们准备过年的三件事（买杂拌儿、爆竹、玩意儿），大人们预备过年用品 | 展现春节前的忙碌与孩子们的喜悦 |
+| 第③段 | 腊月二十三（小年） | 描写祭灶王、吃麦芽糖与江米糖的习俗 | 过春节的“彩排”，体现民俗风情 |
+| 第④段 | 腊月二十三到除夕前 | 描写贴春联、扫房、预备年菜的习俗 | 突出春节前的紧张与忙碌 |
+| 第⑤段 | 除夕 | 描写做年菜、穿新衣、贴对联、放鞭炮、吃团圆饭、守岁的场景 | 展现除夕的热闹非凡与家庭团圆的温馨 |
+| 第⑥段 | 初一 | 描写铺户休息、男人们拜年、女人们待客、孩子们逛庙会的场景 | 呈现初一的安静与休闲，与除夕形成对比 |
+| 第⑦段 | 初六 | 描写铺户开张、放鞭炮、伙计逛庙会的场景 | 体现春节后的恢复与延续 |
+| 第⑧段 | 元宵 | 描写悬灯结彩、吃元宵、逛灯会的场景 | 春节的又一个高潮，展现节日的美丽与热闹 |
+| 第⑨段 | 正月十九 | 描写春节结束，人们恢复正常生活 | 点明春节的时间范围，表达对春节的怀念 |
+
+## 四、重点句段赏析（核心考点）
+### 1. 中心句/写景句/写人句赏析
+- **句段1**：“这不是粥，而是小型的农业产品展览会。”（第①段）
+  - **修辞**：比喻（把腊八粥比作农业产品展览会）
+  - **表达效果**：生动形象地写出了腊八粥中米、豆、干果的种类繁多，体现了农业社会的丰收成果，突出了人们的自傲心理。
+  - **作用说明**：表现了腊八节的独特习俗，为下文描写春节的热闹场景做铺垫。
+
+- **句段2**：“除夕真热闹。家家赶做年菜，到处是酒肉的香味。老少男女都穿起新衣，门外贴好红红的对联，屋里贴好各色的年画，哪一家都灯火通宵，不许间断，鞭炮声日夜不绝。”（第⑤段）
+  - **描写手法**：环境描写、场面描写
+  - **表达效果**：从嗅觉（酒肉的香味）、视觉（新衣、对联、年画、灯火）、听觉（鞭炮声）三个方面描绘了除夕的热闹场景，展现了家庭团圆的温馨与节日的喜庆。
+  - **作用说明**：点明“除夕真热闹”的中心，使读者有身临其境的感觉。
+
+- **句段3**：“有名的老铺都要挂出几百盏灯来：有的一律是玻璃的，有的清一色是牛角的，有的都是纱灯；有的通通彩绘《红楼梦》或《水浒传》故事，有的图案各式各样。”（第⑧段）
+  - **修辞**：排比（“有的……有的……有的……”）
+  - **表达效果**：通过排比句式，详细列举了老铺挂出的各种灯的类型，突出了元宵节灯的数量多、种类丰富，展现了节日的繁华与美丽。
+  - **作用说明**：体现了元宵节作为春节又一个高潮的特点，吸引读者的阅读兴趣。
+
+### 2. 特殊句式解析
+- **句段**：“孩子们喜欢吃这些零七八碎儿，即使没有饺子吃，也必须买杂拌儿。”（第②段）
+  - **句式**：假设复句（“即使……也……”）
+  - **表达效果**：突出了孩子们对杂拌儿的喜爱程度，哪怕没有饺子吃，也要买杂拌儿，体现了春节期间孩子们的快乐与满足。
+
+## 五、写作手法总结
+### 1. 时间顺序
+- **举例**：按照“腊八→小年→除夕→初一→初六→元宵→正月十九”的时间顺序描写春节的习俗。
+- **迁移价值**：在写作中，采用时间顺序可以使文章结构清晰，条理分明，便于读者理解事件的发展过程。
+
+### 2. 详略得当
+- **举例**：详细描写了腊八、小年、除夕、初一、元宵的习俗，简略描写了初六、正月十九的场景。
+- **迁移价值**：在写作中，根据主题的需要，对重要内容进行详细描写，对次要内容进行简略处理，可以突出重点，增强文章的感染力。
+
+### 3. 修辞手法的运用
+- **举例**：比喻（腊八粥比作农业产品展览会）、排比（元宵节灯的描写）、拟人（“除夕噼里啪啦大笑着走来，又噼里啪啦大笑着离去”）。
+- **迁移价值**：在写作中，合理运用修辞手法可以使文章更加生动形象，增强语言的表现力。
+
+### 4. 对比手法
+- **举例**：除夕的热闹与初一的安静形成对比，突出了春节期间不同时间的光景特点。
+- **迁移价值**：在写作中，运用对比手法可以突出事物的特点，增强文章的说服力。
+
+### 5. 细节描写
+- **举例**：描写腊八蒜“色如翡翠，醋也有了些辣味，色味双美”，展现了腊八蒜的特点。
+- **迁移价值**：在写作中，通过细节描写可以使文章更加具体生动，让读者有身临其境的感觉。
+
+## 六、拓展积累
+### 1. 主题词语积累
+- 春节习俗：腊八粥、腊八蒜、祭灶王、贴春联、扫房、吃团圆饭、守岁、拜年、逛庙会、吃元宵
+- 节日氛围：热闹非凡、灯火通宵、鞭炮声日夜不绝、悬灯结彩、火炽而美丽
+
+### 2. 相关诗句或文化延伸
+- **诗句**：“爆竹声中一岁除，春风送暖入屠苏。千门万户曈曈日，总把新桃换旧符。”（王安石《元日》）
+- **文化延伸**：春节是中国最重要的传统节日，具有悠久的历史和丰富的民俗文化。不同地区的春节习俗略有不同，但都表达了人们对新年的美好祝愿与对生活的热爱。
+
+### 3. 思想主题拓展
+- 本文通过描写老北京春节的习俗，展现了传统文化的魅力，表达了对生活的赞美与对未来的期待。在现代社会，虽然一些传统习俗可能发生了变化，但春节仍然是人们团聚、交流、庆祝的重要节日。
+
+### 4. 与阅读链接的对比
+- **老舍《北京的春节》**：以时间为线索，详细描写了北京春节的习俗，语言口语化、富有“京味儿”。
+- **斯好《除夕》**：通过回忆的方式，描写了闽南老家腊月二十九围炉的习俗，语言细腻、充满情感。
+- **不同之处**：《北京的春节》是全景式的描写，展现了春节的整个过程；《除夕》则是特写式的描写，重点刻画了围炉的场景。此外，两者的语言风格也有所不同，《北京的春节》更口语化，《除夕》更细腻情感化。`
+    };
+
+    // ─── STEP 0: 课程内容初始化 ───────────────────────────────────────────────
+    function StepCourseInit({ catalogLeafNode, catalogParentGroupNode, catalogUnitId, selectedLessonLine }) {
+      const [currentPage, setCurrentPage] = useState(0);
+      const images = getBookImagesForCatalogNode(catalogLeafNode, catalogParentGroupNode, catalogUnitId);
+      const totalPages = images.length;
+      const lessonLabel = getLessonKeyForImages(catalogLeafNode, catalogParentGroupNode) || '—';
+      const knowledgePointKey = getLessonKeyForKnowledgePoints(catalogLeafNode, catalogParentGroupNode);
+      const detailedContent = DETAILED_KNOWLEDGE_POINTS[knowledgePointKey];
+
+      useEffect(() => {
+        setCurrentPage(0);
+      }, [catalogLeafNode, catalogUnitId]);
+
+      const handlePrev = () => {
+        setCurrentPage(p => Math.max(0, p - 1));
+      };
+
+      const handleNext = () => {
+        setCurrentPage(p => Math.min(totalPages - 1, p + 1));
+      };
+
+      const imageToShow = images[currentPage];
+
+      return (
+        <div className="animate-in">
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-10 h-10 rounded-xl bg-blue-100 flex items-center justify-center">
+              <span className="text-blue-600"><Icons.BOOK /></span>
+            </div>
+            <div className="min-w-0">
+              <h2 className="text-xl font-semibold text-gray-800">Step 1 · 课程内容初始化</h2>
+              <p className="text-sm text-gray-500 truncate" title={selectedLessonLine}>
+                当前篇目：{selectedLessonLine}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col lg:flex-row gap-4 lg:items-stretch">
+            {/* 左：课本图片（窄） */}
+            <div className="w-full lg:w-[420px] flex-shrink-0 flex flex-col">
+              <label className="block text-xs font-medium text-gray-600 mb-2">课本图片 · {lessonLabel}</label>
+              <div className="flex-1 bg-gray-50 border border-gray-200 rounded-xl overflow-hidden flex flex-col max-h-[calc(100vh-280px)]">
+                {images.length > 0 ? (
+                  <>
+                    <div className="flex-1 flex items-center justify-center overflow-hidden px-4 py-3">
+                      {imageToShow && (
+                        <div className="flex flex-col items-center gap-1">
+                          <img
+                            src={encodeURI(imageToShow.src)}
+                            alt={imageToShow.name}
+                            className="max-w-full max-h-full object-contain rounded-lg shadow-md border border-white"
+                            onError={e => { e.target.style.display = 'none'; }}
+                          />
+                          <span className="text-[10px] text-gray-400">{imageToShow.name}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {totalPages > 1 && (
+                      <div className="flex items-center justify-center gap-4 py-2.5 border-t border-gray-200 bg-white flex-shrink-0">
+                        <button
+                          onClick={handlePrev}
+                          disabled={currentPage === 0}
+                          className={`w-8 h-8 rounded-lg flex items-center justify-center transition ${
+                            currentPage === 0
+                              ? 'text-gray-300 cursor-not-allowed'
+                              : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+                          }`}
+                        >
+                          <Icons.ARROW_LEFT />
+                        </button>
+                        <span className="text-xs text-gray-500 tabular-nums min-w-[3rem] text-center">
+                          第 {currentPage + 1} / {totalPages} 页
+                        </span>
+                        <button
+                          onClick={handleNext}
+                          disabled={currentPage >= totalPages - 1}
+                          className={`w-8 h-8 rounded-lg flex items-center justify-center transition ${
+                            currentPage >= totalPages - 1
+                              ? 'text-gray-300 cursor-not-allowed'
+                              : 'text-gray-500 hover:bg-gray-100 hover:text-gray-700'
+                          }`}
+                        >
+                          <Icons.ARROW_RIGHT />
+                        </button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="flex-1 flex items-center justify-center">
+                    <p className="text-gray-400 text-sm">该篇目暂无课本图片（可在 book 文件夹中按课文名补充素材）</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* 右：本课知识点（宽） */}
+            <aside className="flex-1 min-w-0 flex flex-col">
+              <label className="block text-xs font-medium text-gray-600 mb-2">
+                <span className="flex items-center gap-2">
+                  <span className="text-amber-500"><Icons.SPARKLE /></span>
+                  本课知识点
+                </span>
+              </label>
+              <div className="flex-1 overflow-y-auto p-4 bg-blue-50/50 border border-gray-200 rounded-xl max-h-[calc(100vh-280px)]">
+                {detailedContent ? (
+                  <div
+                    className="prose prose-sm max-w-none prose-h2:text-base prose-h2:font-semibold prose-h3:font-medium prose-p:text-sm prose-li:text-sm"
+                    dangerouslySetInnerHTML={{ __html: marked.parse(detailedContent) }}
+                  />
+                ) : (
+                  <div className="space-y-3">
+                    {MOCK_DATA.knowledgePoints.map((point, i) => (
+                      <div key={i} className="bg-gradient-to-br from-white to-gray-50 border border-blue-200/50 rounded-xl p-3.5 relative overflow-hidden">
+                        <div className="absolute top-0 right-0 w-12 h-12 bg-blue-100 rounded-bl-full opacity-50" />
+                        <div className="flex items-start gap-2.5">
+                          <span className="w-6 h-6 rounded-lg bg-blue-500 text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">{i + 1}</span>
+                          <p className="text-gray-700 text-sm leading-relaxed">{point}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </aside>
+          </div>
+        </div>
+      );
+    }
+
+    // ─── STEP 1: 教案与学案生成 ───────────────────────────────────────────────
+    function StepLessonPlan() {
+      const [loading, setLoading] = useState(true);
+      const [activeTab, setActiveTab] = useState('教案'); // '教案' | '学案'
+
+      useEffect(() => {
+        const timer = setTimeout(() => setLoading(false), 1500);
+        return () => clearTimeout(timer);
+      }, []);
+
+      const studyGuideSlides = [
+        {
+          title: "学习目标",
+          content: "1. 了解作者生平及相关文学常识。\n2. 掌握课文中的生字词。\n3. 初步感知文章的中心思想和情感脉络。",
+        },
+        {
+          title: "资料链接",
+          content: "【作者介绍】\n展示作者生平、代表作品、文学地位等。\n\n【词语解释】\n列出文中重点词语的拼音和释义，帮助扫清阅读障碍。",
+        },
+        {
+          title: "预习检测",
+          content: "【选择题】\n1. 下列关于本文作者的说法正确的是？\n[选项 A, B, C, D]\n\n【填空题】\n2. 请根据拼音写出汉字或给加点字注音：\n[答题区域]",
+        },
+        {
+          title: "学习内容",
+          content: "【核心内容】\n本课主要围绕以下几个核心部分展开：\n1. 核心场景或事件的描绘\n2. 作者情感的抒发与升华\n\n[图片示意：相关教学配图、结构思维导图等]",
+        },
+      ];
+
+      return (
+        <div className="animate-in">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
+              <span className="text-emerald-600"><Icons.AI /></span>
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-gray-800">Step 2 · 教案与学案生成</h2>
+              <p className="text-sm text-gray-500">AI 正在研读课标，结合学情智能生成</p>
+            </div>
+          </div>
+
+          {loading ? (
+            /* 骨架屏 */
+            <div className="space-y-4">
+              <div className="flex items-center justify-center py-16">
+                <div className="text-center">
+                  <div className="relative w-20 h-20 mx-auto mb-4">
+                    <div className="absolute inset-0 rounded-full border-4 border-blue-100" />
+                    <div className="absolute inset-0 rounded-full border-4 border-t-blue-500 border-r-transparent border-b-transparent border-l-transparent spin-dot" />
+                    <div className="absolute inset-2 rounded-full border-4 border-emerald-100" />
+                    <div className="absolute inset-2 rounded-full border-4 border-t-emerald-500 border-r-transparent border-b-transparent border-l-transparent spin-dot" style={{ animationDelay: '0.2s', animationDuration: '1.2s' }} />
+                  </div>
+                  <p className="text-blue-600 font-medium mb-1">AI 正在研读课标生成中...</p>
+                  <p className="text-gray-400 text-sm">正在分析教材结构 &amp; 知识点关联</p>
+                  <div className="mt-4 flex justify-center gap-1">
+                    {[0,1,2].map(i => <div key={i} className={`w-2 h-2 rounded-full bg-blue-400 skeleton`} style={{ animationDelay: `${i*0.3}s` }} />)}
+                  </div>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {[0,1].map(i => (
+                  <div key={i} className="bg-white border border-gray-100 rounded-xl p-5 space-y-3 shadow-sm">
+                    <SkeletonLine width="40%" height="20px" />
+                    {[0,1,2,3,4].map(j => <SkeletonLine key={j} width={`${75 + Math.random()*25}%`} height="14px" className="mb-1" />)}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="bg-blue-50 border border-blue-200 rounded-xl px-4 py-3 flex items-center gap-3">
+                <span className="text-blue-500"><Icons.CHECK_CIRCLE /></span>
+                <p className="text-sm text-blue-700">教案与学案已生成完毕，可根据实际教学需求进行微调</p>
+              </div>
+
+              {/* 选项卡切换 */}
+              <div className="flex border-b border-gray-200 mb-4">
+                <button
+                  className={`px-6 py-2.5 text-sm font-medium border-b-2 transition-colors ${activeTab === '教案' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                  onClick={() => setActiveTab('教案')}
+                >
+                  教案
+                </button>
+                <button
+                  className={`px-6 py-2.5 text-sm font-medium border-b-2 transition-colors ${activeTab === '学案' ? 'border-teal-600 text-teal-600' : 'border-transparent text-gray-500 hover:text-gray-700'}`}
+                  onClick={() => setActiveTab('学案')}
+                >
+                  学案
+                </button>
+              </div>
+
+              <div className="w-full">
+                {/* 教案 */}
+                {activeTab === '教案' && (
+                  <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-card">
+                    <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-5 py-3 flex items-center gap-2">
+                      <span className="text-white"><Icons.DOC /></span>
+                      <h3 className="text-white font-semibold">教案（教师用）</h3>
+                      <span className="ml-auto text-xs text-blue-200 bg-blue-800/40 px-2 py-0.5 rounded-full">AI 生成</span>
+                    </div>
+                    <div className="p-5 overflow-y-auto max-h-[500px]">
+                      <div className="prose prose-sm max-w-none">
+                        {MOCK_DATA.preClass.lessonPlan.split('\n').map((line, i) => (
+                          line.startsWith('【') ? (
+                            <p key={i} className="text-blue-700 font-semibold text-[15px] mt-3 first:mt-0">{line}</p>
+                          ) : (
+                            <p key={i} className="text-gray-600 text-sm leading-relaxed">{line || '\u00A0'}</p>
+                          )
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 学案 */}
+                {activeTab === '学案' && (
+                  <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-card">
+                    <div className="bg-gradient-to-r from-teal-600 to-teal-700 px-5 py-3 flex items-center gap-2">
+                      <span className="text-white"><Icons.STUDENT /></span>
+                      <h3 className="text-white font-semibold">学案（学生用）</h3>
+                      <span className="ml-auto text-xs text-teal-200 bg-teal-800/40 px-2 py-0.5 rounded-full">PPT 形式展示</span>
+                    </div>
+                    <div className="p-5 bg-gray-100 flex gap-4 overflow-x-auto snap-x">
+                      {studyGuideSlides.map((slide, i) => (
+                        <div key={i} className="snap-center shrink-0 w-80 h-[400px] bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col overflow-hidden">
+                          <div className="bg-teal-50 px-4 py-3 border-b border-teal-100">
+                            <h4 className="text-teal-800 font-bold text-center">{slide.title}</h4>
+                          </div>
+                          <div className="p-4 flex-1 overflow-y-auto">
+                            <div className="prose prose-sm max-w-none">
+                              {slide.content.split('\n').map((line, j) => (
+                                line.startsWith('【') ? (
+                                  <p key={j} className="text-teal-700 font-semibold text-sm mt-2 first:mt-0">{line}</p>
+                                ) : (
+                                  <p key={j} className="text-gray-600 text-sm leading-relaxed">{line || '\u00A0'}</p>
+                                )
+                              ))}
+                            </div>
+                          </div>
+                          <div className="bg-gray-50 px-4 py-2 border-t border-gray-100 text-center text-xs text-gray-400">
+                            第 {i + 1} 页 / 共 {studyGuideSlides.length} 页
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // ─── STEP 2: 课中教学工具配置 ────────────────────────────────────────────
+    function StepInClassTools() {
+      const planA = ['t1','t9','t10','t11'];
+      const planB = ['t1','t4','t5','t8','t9','t10','t11'];
+      const [selectedPlan, setSelectedPlan] = useState(null);
+      const [selectedTools, setSelectedTools] = useState(new Set());
+
+      const applyPlan = (plan) => {
+        setSelectedPlan(plan);
+        setSelectedTools(new Set(plan === 'A' ? planA : planB));
+      };
+
+      const toggleTool = (id) => {
+        const next = new Set(selectedTools);
+        if (next.has(id)) next.delete(id); else next.add(id);
+        setSelectedTools(next);
+      };
+
+      return (
+        <div className="animate-in">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">
+              <span className="text-purple-600"><Icons.LAYERS /></span>
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-gray-800">Step 3 · 课中教学工具配置</h2>
+              <p className="text-sm text-gray-500">选择适合本节课的课堂互动工具组合</p>
+            </div>
+          </div>
+
+          {/* 方案选择 */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-5">
+            {[
+              { id: 'A', name: '核心精简版', desc: '适合常规教学，快速高效', tools: planA, toolNames: ['课件','随堂测','智能批改','布置作业'], color: 'blue' },
+              { id: 'B', name: '全场景互动版', desc: '适合公开课/示范课，氛围活跃', tools: planB, toolNames: ['课件','课堂活动','智能听写','趣味抽奖','随堂测','智能批改','布置作业'], color: 'purple' },
+            ].map(plan => (
+              <div
+                key={plan.id}
+                onClick={() => applyPlan(plan.id)}
+                className={`relative cursor-pointer rounded-2xl border-2 p-5 transition-all duration-200 ${
+                  selectedPlan === plan.id
+                    ? plan.color === 'blue' ? 'border-blue-400 bg-blue-50 shadow-card-hover' : 'border-purple-400 bg-purple-50 shadow-card-hover'
+                    : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md'
+                }`}
+              >
+                <div className="flex items-center gap-3 mb-2">
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white font-bold ${
+                    selectedPlan === plan.id
+                      ? plan.color === 'blue' ? 'bg-blue-500' : 'bg-purple-500'
+                      : 'bg-gray-300'
+                  }`}>
+                    {plan.id === 'A' ? '⚡' : '🎯'}
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-800">{plan.name}</h3>
+                    <p className="text-xs text-gray-500">{plan.desc}</p>
+                  </div>
+                  {selectedPlan === plan.id && (
+                    <span className="ml-auto text-green-500"><Icons.CHECK_CIRCLE /></span>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {plan.toolNames.map(n => (
+                    <span key={n} className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full">{n}</span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* 工具网格 */}
+          <div className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm">
+            <h4 className="text-sm font-medium text-gray-600 mb-3 flex items-center gap-2">
+              <span className="text-gray-400"><Icons.GRID /></span>
+              所有可用工具（点击切换选中状态）
+            </h4>
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-11 gap-2">
+              {MOCK_DATA.inClassTools.map(tool => {
+                const isSelected = selectedTools.has(tool.id);
+                return (
+                  <div
+                    key={tool.id}
+                    onClick={() => toggleTool(tool.id)}
+                    className={`cursor-pointer rounded-xl border-2 p-3 flex flex-col items-center gap-1 transition-all duration-150 select-none ${
+                      isSelected
+                        ? `border-transparent bg-gradient-to-br ${tool.color} text-white shadow-md`
+                        : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    <span className={isSelected ? 'text-white' : 'text-gray-500'}>{React.createElement(Icons[tool.icon])}</span>
+                    <span className={`text-xs font-medium ${isSelected ? 'text-white' : 'text-gray-600'}`}>{tool.name}</span>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-3 flex items-center gap-2 text-xs text-gray-500">
+              <span>已选 <span className="font-semibold text-blue-600">{selectedTools.size}</span> 个工具</span>
+              <span className="text-gray-300">|</span>
+              <span className="text-gray-400">点击工具卡片可自定义增删</span>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ─── STEP 3: 课后作业分层设计 ────────────────────────────────────────────
+    function StepPostClassHomework() {
+      const [activeTab, setActiveTab] = useState('A');
+
+      return (
+        <div className="animate-in">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center">
+              <span className="text-amber-600"><Icons.EDIT /></span>
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-gray-800">Step 4 · 课后作业分层设计</h2>
+              <p className="text-sm text-gray-500">系统已根据课堂教学效果及学生认知差异自动生成分层任务</p>
+            </div>
+          </div>
+
+          <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-5 flex items-start gap-3">
+            <span className="text-amber-500 flex-shrink-0 mt-0.5"><Icons.BULB /></span>
+            <p className="text-sm text-amber-700">
+              <strong>智能分层逻辑：</strong>系统根据课堂互动数据（答题正确率、课堂活动参与度）及学生历史画像，自动将全班学生匹配至 A/B/C 三个层次，每个层次推送差异化作业任务。
+            </p>
+          </div>
+
+          {/* Tab 切换 */}
+          <div className="flex gap-2 mb-4">
+            {['A','B','C'].map(level => {
+              const data = MOCK_DATA.postClassHomework[level];
+              return (
+                <button
+                  key={level}
+                  onClick={() => setActiveTab(level)}
+                  className={`flex-1 py-3 px-4 rounded-xl font-semibold text-sm transition-all duration-200 border-2 ${
+                    activeTab === level
+                      ? `${data.color} shadow-sm`
+                      : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300'
+                  }`}
+                >
+                  <span className="flex items-center justify-center gap-2">
+                    <span className={`w-7 h-7 rounded-lg ${data.labelBg} text-sm font-bold flex items-center justify-center`}>{level}</span>
+                    <span className={activeTab === level ? 'text-gray-800' : ''}>{data.level.split('(')[0].trim()}</span>
+                    <span>{data.badge}</span>
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* 层级卡片 */}
+          {['A','B','C'].map(level => {
+            const data = MOCK_DATA.postClassHomework[level];
+            if (activeTab !== level) return null;
+            return (
+              <div key={level} className={`border-2 ${data.color} rounded-2xl p-6 animate-in`}>
+                <div className="flex items-start gap-4 mb-5">
+                  <div className={`w-14 h-14 rounded-2xl ${data.tagColor} flex items-center justify-center text-white text-2xl font-bold flex-shrink-0`}>{level}</div>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <h3 className="text-lg font-bold text-gray-800">{data.level}</h3>
+                      <span className="text-xs px-2 py-0.5 bg-white/60 rounded-full text-gray-500 border border-gray-200">{data.method}</span>
+                    </div>
+                    <p className="text-sm text-gray-500 mb-2">
+                      <span className="text-gray-400">教学目标：</span>
+                      <span className="text-gray-700 font-medium">{data.target}</span>
+                    </p>
+                    <div className="flex items-center gap-1.5 text-xs text-gray-400">
+                      <span className="w-2 h-2 rounded-full bg-green-400" />
+                      <span>适用学生：{level === 'A' ? '基础薄弱需巩固' : level === 'B' ? '中等水平促提升' : '学有余力促拓展'}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <h4 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                    <span className="text-gray-300">📋</span> 作业任务清单
+                  </h4>
+                  {data.tasks.map((task, i) => (
+                    <div key={i} className="flex items-start gap-3 bg-white/60 rounded-xl p-3.5 border border-gray-100 hover:border-gray-200 transition">
+                      <span className={`w-6 h-6 rounded-lg ${data.tagColor} text-white text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5`}>{i + 1}</span>
+                      <p className="text-gray-700 text-sm leading-relaxed flex-1">{task}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-4 flex items-center gap-3 pt-4 border-t border-gray-200/50">
+                  <button className={`px-4 py-2 rounded-xl text-sm font-medium text-white bg-gradient-to-r ${data.tagColor} hover:opacity-90 transition shadow-sm`}>
+                    🖊️ 编辑此层作业
+                  </button>
+                  <button className="px-4 py-2 rounded-xl text-sm font-medium text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 transition">
+                    👁️ 预览效果
+                  </button>
+                  <span className="ml-auto text-xs text-gray-400 flex items-center gap-1">
+                    <Icons.CLOCK /> 系统已自动分配
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      );
+    }
+
+    // ─── STEP 4: 个性化辅导与发布 ────────────────────────────────────────────
+    function StepTutoring({ onPublish }) {
+      const [loading, setLoading] = useState(true);
+      const [showModal, setShowModal] = useState(false);
+
+      useEffect(() => {
+        const timer = setTimeout(() => setLoading(false), 1200);
+        return () => clearTimeout(timer);
+      }, []);
+
+      const handlePublish = () => {
+        setShowModal(false);
+        setTimeout(onPublish, 300);
+      };
+
+      return (
+        <div className="animate-in">
+          <div className="flex items-center gap-3 mb-5">
+            <div className="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center">
+              <span className="text-rose-600"><Icons.STUDENT /></span>
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold text-gray-800">Step 5 · 个性化辅导与发布</h2>
+              <p className="text-sm text-gray-500">AI 驱动课后个性化学习路径推荐</p>
+            </div>
+          </div>
+
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-16">
+              <div className="w-16 h-16 rounded-full border-4 border-t-blue-500 border-r-blue-200 border-b-blue-200 border-l-blue-200 spin-dot mb-4" />
+              <p className="text-blue-600 font-medium mb-1">正在分析分层作业模拟数据...</p>
+              <p className="text-gray-400 text-sm">匹配学生认知画像，生成个性化辅导策略</p>
+              <div className="mt-3 flex gap-3">
+                <div className="flex items-center gap-1.5 text-xs text-gray-400">
+                  <div className="w-3 h-3 rounded-full bg-blue-300 skeleton" />
+                  <span>学情分析</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs text-gray-400">
+                  <div className="w-3 h-3 rounded-full bg-emerald-300 skeleton" style={{animationDelay:'0.4s'}} />
+                  <span>路径生成</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs text-gray-400">
+                  <div className="w-3 h-3 rounded-full bg-purple-300 skeleton" style={{animationDelay:'0.8s'}} />
+                  <span>内容推送</span>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-5">
+              <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 flex items-center gap-3">
+                <span className="text-emerald-500"><Icons.CHECK_CIRCLE /></span>
+                <p className="text-sm text-emerald-700">个性化辅导策略已生成完毕，系统将根据学生完成情况实时动态调整推送内容</p>
+              </div>
+
+              {MOCK_DATA.tutoring.map((item, i) => (
+                <div key={i} className="bg-white border border-gray-200 rounded-2xl p-5 shadow-sm hover:shadow-card transition">
+                  <div className="flex items-start gap-4 mb-4">
+                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center text-2xl flex-shrink-0">
+                      {item.avatar}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <h3 className="font-semibold text-gray-800">{item.student}</h3>
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${item.tagBg}`}>{item.tag}</span>
+                      </div>
+                      <p className="text-xs text-gray-400 flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-gray-300" />
+                        {item.detection}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="bg-gray-50 border border-gray-100 rounded-xl p-4">
+                      <p className="text-xs font-medium text-gray-500 mb-2 flex items-center gap-1.5">
+                        <span className="text-purple-400">🤖 AI 智能检测</span>
+                      </p>
+                      <p className="text-gray-600 text-sm leading-relaxed">{item.detection}</p>
+                    </div>
+
+                    <div className={`rounded-xl p-4 border ${i === 0 ? 'bg-blue-50 border-blue-100' : 'bg-emerald-50 border-emerald-100'}`}>
+                      <p className={`text-xs font-medium mb-2 flex items-center gap-1.5 ${i === 0 ? 'text-blue-600' : 'text-emerald-600'}`}>
+                        <span>{i === 0 ? '📖 个性化推送' : '🏆 进阶推荐'}</span>
+                      </p>
+                      <p className={`text-sm leading-relaxed ${i === 0 ? 'text-blue-700' : 'text-emerald-700'}`}>{item.push}</p>
+                    </div>
+
+                    <div className="flex items-center gap-2 text-xs text-gray-400">
+                      <span>📊</span>
+                      <span>{item.effect}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {/* 发布按钮 */}
+              <div className="mt-6 pt-5 border-t border-gray-200 flex flex-col items-center gap-3">
+                <button
+                  onClick={() => setShowModal(true)}
+                  className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold text-base rounded-2xl shadow-lg shadow-blue-500/25 hover:shadow-blue-500/40 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3"
+                >
+                  <span className="text-white"><Icons.ROCKET /></span>
+                  一键发布教学流程
+                  <span className="text-blue-200 text-sm font-normal ml-1">开启全链路数据闭环</span>
+                </button>
+                <p className="text-xs text-gray-400">发布后，系统将自动推送课前学案至学生端，并开启课中数据采集</p>
+              </div>
+            </div>
+          )}
+
+          {/* 成功弹窗 */}
+          {showModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+              <div className="absolute inset-0 bg-black/40 overlay-in" onClick={() => setShowModal(false)} />
+              <div className="relative bg-white rounded-3xl p-8 max-w-sm w-full text-center success-pop shadow-2xl">
+                <div className="w-20 h-20 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-emerald-500"><Icons.CHECK_CIRCLE /></span>
+                </div>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">发布成功！</h3>
+                <p className="text-gray-500 text-sm mb-1">全链路数据闭环已开启</p>
+                <div className="mt-4 bg-emerald-50 border border-emerald-200 rounded-xl p-3 mb-5 text-left text-xs text-emerald-700 space-y-1.5">
+                  <p>✓ 课前学案已推送至全班 32 名学生</p>
+                  <p>✓ 课中教学工具已同步至教师端</p>
+                  <p>✓ 课后分层作业已配置完毕</p>
+                  <p>✓ 个性化辅导策略已激活</p>
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowModal(false)}
+                    className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium hover:bg-gray-50 transition"
+                  >
+                    查看详情
+                  </button>
+                  <button
+                    onClick={handlePublish}
+                    className="flex-1 px-4 py-2.5 rounded-xl bg-emerald-500 text-white text-sm font-medium hover:bg-emerald-600 transition"
+                  >
+                    完成
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // ─── MAIN APP ────────────────────────────────────────────────────────────
+    function App() {
+      const [currentStep, setCurrentStep] = useState(0);
+      const [contentKey, setContentKey] = useState(0);
+      const [catalogVersion, setCatalogVersion] = useState('bb');
+      const [catalogGrade, setCatalogGrade] = useState('g6x');
+      const [expandedIds, setExpandedIds] = useState(() => buildExpandedDefaults('bb', 'g6x'));
+      const initialCatalogPick = (() => {
+        const t = getCatalogTree('bb', 'g6x');
+        return pickFirstLeafFromTree(t);
+      })();
+      const [selectedLeafId, setSelectedLeafId] = useState(initialCatalogPick.node?.id || 'u1-1');
+      const [catalogUnitId, setCatalogUnitId] = useState(initialCatalogPick.unitId || 'u1');
+      const [catalogLeafNode, setCatalogLeafNode] = useState(initialCatalogPick.node);
+      const [catalogParentGroupNode, setCatalogParentGroupNode] = useState(initialCatalogPick.parentGroup);
+      const [selectedLessonLine, setSelectedLessonLine] = useState(() =>
+        initialCatalogPick.node
+          ? formatCatalogLessonLine('g6x', initialCatalogPick.unitTitle, initialCatalogPick.node)
+          : ''
+      );
+      const [catalogCollapsed, setCatalogCollapsed] = useState(false);
+      const [stepBarCollapsed, setStepBarCollapsed] = useState(false);
+
+      useEffect(() => {
+        const t = getCatalogTree(catalogVersion, catalogGrade);
+        setExpandedIds(buildExpandedDefaults(catalogVersion, catalogGrade));
+        const first = pickFirstLeafFromTree(t);
+        if (first.node) {
+          setSelectedLeafId(first.node.id);
+          setCatalogUnitId(first.unitId || 'u1');
+          setCatalogLeafNode(first.node);
+          setCatalogParentGroupNode(first.parentGroup);
+          setSelectedLessonLine(formatCatalogLessonLine(catalogGrade, first.unitTitle, first.node));
+        }
+      }, [catalogVersion, catalogGrade]);
+
+      const toggleCatalogExpand = (id) => {
+        setExpandedIds((prev) => {
+          const n = new Set(prev);
+          if (n.has(id)) n.delete(id);
+          else n.add(id);
+          return n;
+        });
+      };
+
+      const handleSelectCatalogLeaf = (node, unit, parentGroupNode) => {
+        setSelectedLeafId(node.id);
+        setCatalogUnitId(unit.id);
+        setCatalogLeafNode(node);
+        setCatalogParentGroupNode(parentGroupNode || null);
+        setSelectedLessonLine(formatCatalogLessonLine(catalogGrade, unit.title, node));
+      };
+
+      const steps = [
+        { label: '课程初始化', sub: 'Step 1' },
+        { label: '教案学案', sub: 'Step 2' },
+        { label: '课中工具', sub: 'Step 3' },
+        { label: '分层作业', sub: 'Step 4' },
+        { label: '个性化辅导', sub: 'Step 5' },
+      ];
+
+      const goNext = () => {
+        if (currentStep < steps.length - 1) {
+          setCurrentStep(s => s + 1);
+          setContentKey(k => k + 1);
+        }
+      };
+
+      const goPrev = () => {
+        if (currentStep > 0) {
+          setCurrentStep(s => s - 1);
+          setContentKey(k => k + 1);
+        }
+      };
+
+      const handleReset = () => {
+        setCurrentStep(0);
+        setContentKey(k => k + 1);
+      };
+
+      const stepComponents = [
+        <StepCourseInit
+          key={contentKey}
+          catalogLeafNode={catalogLeafNode}
+          catalogParentGroupNode={catalogParentGroupNode}
+          catalogUnitId={catalogUnitId}
+          selectedLessonLine={selectedLessonLine}
+        />,
+        <StepLessonPlan key={contentKey} />,
+        <StepInClassTools key={contentKey} />,
+        <StepPostClassHomework key={contentKey} />,
+        <StepTutoring key={contentKey} onPublish={handleReset} />,
+      ];
+
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex flex-col">
+          {/* ── 全局顶部导航栏 ── */}
+          <header className="bg-white/80 backdrop-blur-md border-b border-gray-200/80 sticky top-0 z-40 shadow-sm">
+            <div className="max-w-6xl mx-auto px-5 h-14 flex items-center">
+              {/* Logo */}
+              <div className="flex items-center gap-2.5 flex-shrink-0" style={{ marginLeft: '-370px' }}>
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-sm">
+                  <span className="text-white"><Icons.AI /></span>
+                </div>
+                <span className="font-bold text-gray-800 tracking-tight text-[15px]">未来课堂</span>
+              </div>
+
+              {/* 导航项 — 不换行，中间居中 */}
+              <nav className="flex items-center gap-1 flex-1 justify-center flex-nowrap overflow-x-auto">
+                {[
+                  { icon: <Icons.HOME />, label: '教师工作台', active: false },
+                  { icon: <Icons.DOCS />, label: '班级管理', active: false },
+                  { icon: <Icons.AI />, label: '创建教学流程', active: true },
+                  { icon: <Icons.LAYERS />, label: '资源库', active: false },
+                  { icon: <Icons.EDIT />, label: '作业管理', active: false },
+                  { icon: <Icons.GAME />, label: '课堂互动', active: false },
+                  { icon: <Icons.SETTINGS />, label: '管理后台', active: false },
+                ].map((item, i) => (
+                  <button key={i} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 flex-shrink-0 whitespace-nowrap ${
+                    item.active
+                      ? 'bg-blue-50 text-blue-600'
+                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                  }`}>
+                    <span className={item.active ? 'text-blue-500' : 'text-gray-400'}>{item.icon}</span>
+                    {item.label}
+                  </button>
+                ))}
+              </nav>
+
+              {/* 右侧操作区 */}
+              <div className="flex items-center gap-2 flex-shrink-0" style={{ marginRight: '-370px' }}>
+                {/* 通知 */}
+                <button className="relative w-9 h-9 rounded-xl bg-gray-50 hover:bg-gray-100 flex items-center justify-center text-gray-500 transition-all duration-150 flex-shrink-0">
+                  <Icons.BELL />
+                  <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-white" />
+                </button>
+                {/* 用户头像 */}
+                <button className="flex items-center gap-2 group flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-indigo-500 flex items-center justify-center text-white text-sm font-semibold shadow-sm">
+                    刘
+                  </div>
+                  <span className="text-xs text-gray-500 group-hover:text-gray-700 transition hidden md:inline">刘老师</span>
+                </button>
+              </div>
+            </div>
+          </header>
+
+          {/* ── 主体：目录 | 流程 | 主内容，三列顶对齐 + 左右留白（与线框一致） ── */}
+          <main className="flex-1 w-full min-h-0">
+            <div className="mx-auto w-full max-w-[min(100%,1680px)] px-5 sm:px-6 md:px-8 lg:px-10 py-4 pb-8 flex flex-col lg:flex-row lg:items-start gap-4 md:gap-5 lg:gap-6">
+              {/* 列1：课程目录 */}
+              <div className="flex justify-center lg:justify-start lg:flex-shrink-0 lg:self-start">
+                <CourseCatalogSidebar
+                  versionId={catalogVersion}
+                  gradeVolumeId={catalogGrade}
+                  onVersionChange={setCatalogVersion}
+                  onGradeVolumeChange={setCatalogGrade}
+                  expandedIds={expandedIds}
+                  onToggleExpand={toggleCatalogExpand}
+                  selectedLeafId={selectedLeafId}
+                  onSelectLeaf={handleSelectCatalogLeaf}
+                  collapsed={catalogCollapsed}
+                  onToggleCollapse={() => setCatalogCollapsed((v) => !v)}
+                />
+              </div>
+
+              {/* 列2：教学流程（高度随内容，与目录顶对齐） */}
+              <div className={`hidden lg:flex flex-shrink-0 self-start transition-all duration-300 ${stepBarCollapsed ? 'w-[44px]' : 'w-[150px]'}`}>
+                <div className={`bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden w-full transition-all duration-300 ${stepBarCollapsed ? 'h-[44px]' : ''}`}>
+                  <div className={`flex items-center h-11 px-3 border-b border-gray-100 flex-shrink-0 ${stepBarCollapsed ? 'justify-center' : ''}`}>
+                    {!stepBarCollapsed && <span className="text-xs font-medium text-gray-700">教学流程</span>}
+                    <button
+                      type="button"
+                      onClick={() => setStepBarCollapsed((v) => !v)}
+                      className="ml-auto p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition flex-shrink-0"
+                      title={stepBarCollapsed ? '展开' : '收起'}
+                    >
+                      {stepBarCollapsed ? <Icons.CHEVRON_RIGHT /> : <Icons.CHEVRON_DOWN />}
+                    </button>
+                  </div>
+                  {stepBarCollapsed ? (
+                    <div className="flex flex-col items-center py-2 gap-1.5">
+                      {[0, 1, 2].map((i) => (
+                        <div key={i} className={`w-7 h-7 rounded-lg ${i === currentStep ? 'bg-blue-500' : 'bg-gray-100'} ${i < currentStep ? 'opacity-50' : ''}`} />
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="overflow-y-auto py-3 px-2.5 max-h-[calc(100vh-7rem)]">
+                      <div className="relative">
+                        <div
+                          className="absolute left-[22px] top-1 bottom-1 w-px bg-gray-200 rounded-full overflow-hidden pointer-events-none"
+                          aria-hidden
+                        />
+                        <div
+                          className="absolute left-[22px] top-1 w-px bg-blue-500 rounded-full transition-all duration-500 ease-out pointer-events-none"
+                          aria-hidden
+                          style={{ height: `${(currentStep / (steps.length - 1)) * 100}%` }}
+                        />
+                        <ol className="relative z-[1] space-y-0 list-none m-0 p-0">
+                          {steps.map((step, i) => {
+                            const done = i < currentStep;
+                            const active = i === currentStep;
+                            return (
+                              <li key={i} className="relative pb-6 last:pb-0">
+                                <button
+                                  type="button"
+                                  onClick={() => { setCurrentStep(i); setContentKey((k) => k + 1); }}
+                                  className={`w-full flex items-center gap-2.5 text-left rounded-lg px-1.5 py-1 transition ${active ? 'bg-blue-50' : 'hover:bg-gray-50'}`}
+                                >
+                                  <span className={`relative z-10 flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center text-xs font-bold transition-all ${done ? 'bg-blue-500 text-white' : active ? 'bg-blue-600 text-white ring-2 ring-blue-200 ring-offset-1' : 'bg-gray-100 text-gray-400'}`}>
+                                    {done ? <span className="text-white"><Icons.CHECK_CIRCLE /></span> : i + 1}
+                                  </span>
+                                  <span className="min-w-0">
+                                    <span className={`block text-xs font-medium ${active ? 'text-blue-600' : done ? 'text-gray-400' : 'text-gray-400'}`}>{step.sub}</span>
+                                    <span className={`block text-xs font-medium ${active ? 'text-gray-800' : done ? 'text-gray-500' : 'text-gray-400'}`}>{step.label}</span>
+                                  </span>
+                                </button>
+                              </li>
+                            );
+                          })}
+                        </ol>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* 列3：主内容（占满剩余宽度） */}
+              <div className="flex-1 min-w-0 flex flex-col gap-4">
+                <div className="lg:hidden bg-white rounded-xl shadow-sm border border-gray-100 p-3 flex justify-between gap-1 overflow-x-auto">
+                  {steps.map((step, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => { setCurrentStep(i); setContentKey((k) => k + 1); }}
+                      className={`flex-shrink-0 px-2 py-1 rounded-lg text-center min-w-[4.5rem] ${
+                        i === currentStep ? 'bg-blue-50 text-blue-700' : 'text-slate-400'
+                      }`}
+                    >
+                      <span className="block text-[10px]">{step.sub}</span>
+                      <span className="block text-[10px] font-medium truncate max-w-[5rem]">{step.label}</span>
+                    </button>
+                  ))}
+                </div>
+
+                <div className="bg-white rounded-2xl shadow-card border border-gray-100/80 p-4 md:p-6 min-h-[360px]">
+                  <div key={contentKey} className="animate-in">
+                    {stepComponents[currentStep]}
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between gap-3">
+                  <button
+                    onClick={goPrev}
+                    disabled={currentStep === 0}
+                    className={`flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 ${
+                      currentStep === 0
+                        ? 'text-gray-300 cursor-not-allowed'
+                        : 'text-gray-600 hover:bg-white hover:shadow-sm hover:text-gray-800'
+                    }`}
+                  >
+                    <Icons.ARROW_LEFT />
+                    上一步
+                  </button>
+
+                  <span className="text-[10px] sm:text-xs text-slate-400 tabular-nums shrink-0 px-1">
+                    第 {currentStep + 1} / {steps.length} 步
+                  </span>
+
+                  {currentStep < steps.length - 1 ? (
+                    <button
+                      onClick={goNext}
+                      className="flex items-center gap-2 px-4 sm:px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium text-sm transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] shadow-md shadow-blue-200"
+                    >
+                      <span className="hidden sm:inline">下一步：{steps[currentStep + 1].label}</span>
+                      <span className="sm:hidden">下一步</span>
+                      <Icons.ARROW_RIGHT />
+                    </button>
+                  ) : (
+                    <div className="w-[108px]" />
+                  )}
+                </div>
+
+                <p className="text-center text-xs text-gray-300 pt-2">
+                  未来课堂 · 智能教学流程演示 · All data is mock for demonstration only
+                </p>
+              </div>
+            </div>
+          </main>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<App />);
+  </script>
+</body>
+</html>
