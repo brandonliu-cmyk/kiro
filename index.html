@@ -1416,6 +1416,12 @@
             </div>
         </div>
         <div class="sub-header-right">
+            <div id="data-analysis-progress-container" style="display: none; align-items: center; gap: 8px; margin-right: 12px;">
+                <div style="font-size: 13px; color: var(--text-secondary);">纳入中 <span id="data-analysis-progress-text">0%</span></div>
+                <div style="width: 120px; height: 6px; background: #e8e8e8; border-radius: 3px; overflow: hidden;">
+                    <div id="data-analysis-progress-bar" style="width: 0%; height: 100%; background: var(--primary-blue); transition: width 0.3s;"></div>
+                </div>
+            </div>
             <div id="grading-progress-container" style="display: none; align-items: center; gap: 8px; margin-right: 12px;">
                 <div style="font-size: 13px; color: var(--text-secondary);">批改中 <span id="grading-progress-text">0/0</span></div>
                 <div style="width: 120px; height: 6px; background: #e8e8e8; border-radius: 3px; overflow: hidden;">
@@ -1436,6 +1442,14 @@
                     <line x1="9" y1="15" x2="15" y2="15"/>
                 </svg>
                 批量上传作业
+            </button>
+            <button type="button" class="btn btn-primary" id="btn-data-analysis" disabled style="opacity: 0.5; cursor: not-allowed;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                纳入数据分析
             </button>
         </div>
     </header>
@@ -1646,6 +1660,73 @@
         <button class="modal-close" id="btn-close-image-preview" aria-label="关闭" style="position: absolute; top: 20px; right: 30px; color: #fff; font-size: 32px; background: none; border: none; cursor: pointer; z-index: 10001;">&times;</button>
         <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; padding: 40px;">
             <img id="image-preview-large" src="" alt="放大预览" style="max-width: 100%; max-height: 100%; object-fit: contain; box-shadow: 0 4px 24px rgba(0,0,0,0.5); border-radius: 4px;">
+        </div>
+    </div>
+
+    <!-- 纳入数据分析 Modal -->
+    <div class="modal-overlay" id="data-analysis-modal">
+        <div class="modal-container" style="width: 480px;">
+            <div class="modal-header">
+                <div class="modal-title">纳入数据分析</div>
+                <button class="modal-close" id="btn-close-analysis-modal" aria-label="关闭">&times;</button>
+            </div>
+            
+            <div style="font-size: 14px; color: var(--text-dark); margin-bottom: 24px; text-align: center;">
+                当前题目尚未关联章节，是否需要关联？
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; margin-bottom: 16px;">
+                    <span style="width: 80px; font-size: 14px; color: var(--text-secondary);">学科</span>
+                    <select id="analysis-subject" style="flex: 1; height: 36px; border: 1px solid var(--border-color); border-radius: 4px; padding: 0 12px; font-size: 14px; color: var(--text-dark); outline: none;">
+                        <option value="">请选择学科</option>
+                        <option value="math">数学</option>
+                        <option value="chinese">语文</option>
+                        <option value="english">英语</option>
+                    </select>
+                </div>
+                <div style="display: flex; align-items: center; margin-bottom: 16px;">
+                    <span style="width: 80px; font-size: 14px; color: var(--text-secondary);">教材版本</span>
+                    <select id="analysis-version" style="flex: 1; height: 36px; border: 1px solid var(--border-color); border-radius: 4px; padding: 0 12px; font-size: 14px; color: var(--text-dark); outline: none;">
+                        <option value="">请选择教材版本</option>
+                        <option value="pep">人教版</option>
+                        <option value="bnu">北师大版</option>
+                        <option value="sj">苏教版</option>
+                    </select>
+                </div>
+                <div style="display: flex; align-items: center; margin-bottom: 16px;">
+                    <span style="width: 80px; font-size: 14px; color: var(--text-secondary);">年级</span>
+                    <select id="analysis-grade" style="flex: 1; height: 36px; border: 1px solid var(--border-color); border-radius: 4px; padding: 0 12px; font-size: 14px; color: var(--text-dark); outline: none;">
+                        <option value="">请选择年级</option>
+                        <option value="1">一年级</option>
+                        <option value="2">二年级</option>
+                        <option value="3">三年级</option>
+                        <option value="4">四年级</option>
+                        <option value="5">五年级</option>
+                        <option value="6">六年级</option>
+                    </select>
+                </div>
+                <div style="display: flex; align-items: center; position: relative;">
+                    <span style="width: 80px; font-size: 14px; color: var(--text-secondary);">课程节点</span>
+                    <div id="analysis-node-trigger" style="flex: 1; height: 36px; border: 1px solid var(--border-color); border-radius: 4px; padding: 0 12px; font-size: 14px; color: var(--text-secondary); background: #f5f5f5; cursor: not-allowed; display: flex; align-items: center; justify-content: space-between; user-select: none;">
+                        <span id="analysis-node-selected-text">请先选择学科/版本/年级</span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                        </svg>
+                    </div>
+                    <div id="analysis-node-dropdown" style="display: none; position: absolute; top: 100%; left: 80px; right: 0; margin-top: 4px; background: #fff; border: 1px solid var(--border-color); border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-height: 240px; overflow-y: auto; z-index: 1000;">
+                        <!-- 动态填充级联菜单内容 -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer" style="display: flex; justify-content: space-between; padding-top: 16px; border-top: 1px solid var(--border-color);">
+                <button class="btn btn-secondary" id="btn-skip-analysis-modal" style="color: var(--primary-blue); border-color: var(--primary-blue);">无法匹配章节，直接纳入</button>
+                <div style="display: flex; gap: 12px;">
+                    <button class="btn btn-secondary" id="btn-cancel-analysis-modal">取消</button>
+                    <button class="btn btn-primary" id="btn-confirm-analysis-modal">确定</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -2239,6 +2320,20 @@
                         btnStart.classList.remove('btn-primary');
                         btnStart.classList.add('btn-disabled');
                         btnStart.disabled = true;
+                    }
+                }
+                
+                // 检查是否所有作业都已批改，并且有批改数据
+                var btnDataAnalysis = document.getElementById('btn-data-analysis');
+                if (btnDataAnalysis) {
+                    if (allItems.length > 0 && !hasAnyUngraded && document.body.classList.contains('grading-in-progress') === false) {
+                        btnDataAnalysis.disabled = false;
+                        btnDataAnalysis.style.opacity = '1';
+                        btnDataAnalysis.style.cursor = 'pointer';
+                    } else {
+                        btnDataAnalysis.disabled = true;
+                        btnDataAnalysis.style.opacity = '0.5';
+                        btnDataAnalysis.style.cursor = 'not-allowed';
                     }
                 }
             }
@@ -4116,6 +4211,258 @@
                 btnStartBatchUpload.style.opacity = '0.5';
                 
                 updateGradingButtonsState();
+            }
+
+            // --- Data Analysis Modal Logic ---
+            var btnDataAnalysis = document.getElementById('btn-data-analysis');
+            var dataAnalysisModal = document.getElementById('data-analysis-modal');
+            var btnCloseAnalysisModal = document.getElementById('btn-close-analysis-modal');
+            var btnCancelAnalysisModal = document.getElementById('btn-cancel-analysis-modal');
+            var btnConfirmAnalysisModal = document.getElementById('btn-confirm-analysis-modal');
+
+            var analysisSubject = document.getElementById('analysis-subject');
+            var analysisVersion = document.getElementById('analysis-version');
+            var analysisGrade = document.getElementById('analysis-grade');
+            var analysisChapter = document.getElementById('analysis-chapter');
+            var analysisNode = document.getElementById('analysis-node');
+
+            var dataAnalysisProgressContainer = document.getElementById('data-analysis-progress-container');
+            var dataAnalysisProgressText = document.getElementById('data-analysis-progress-text');
+            var dataAnalysisProgressBar = document.getElementById('data-analysis-progress-bar');
+
+            // 模拟课程数据结构
+            var mockCourseData = {
+                chapters: [
+                    {
+                        id: 'c1',
+                        name: '第一单元 混合运算',
+                        nodes: [
+                            { id: 'n1-1', name: '1. 小熊购物' },
+                            { id: 'n1-2', name: '2. 买文具' },
+                            { id: 'n1-3', name: '3. 过河' },
+                            { id: 'n1-4', name: '练习一' }
+                        ]
+                    },
+                    {
+                        id: 'c2',
+                        name: '第二单元 观察物体',
+                        nodes: [
+                            { id: 'n2-1', name: '1. 看一看(一)' },
+                            { id: 'n2-2', name: '2. 看一看(二)' }
+                        ]
+                    },
+                    {
+                        id: 'c3',
+                        name: '第三单元 加与减',
+                        nodes: [
+                            { id: 'n3-1', name: '1. 捐书活动' },
+                            { id: 'n3-2', name: '2. 运白菜' },
+                            { id: 'n3-3', name: '3. 节余多少钱' },
+                            { id: 'n3-4', name: '4. 里程表(一)' },
+                            { id: 'n3-5', name: '5. 里程表(二)' },
+                            { id: 'n3-6', name: '练习二' }
+                        ]
+                    }
+                ]
+            };
+
+            var analysisNodeTrigger = document.getElementById('analysis-node-trigger');
+            var analysisNodeSelectedText = document.getElementById('analysis-node-selected-text');
+            var analysisNodeDropdown = document.getElementById('analysis-node-dropdown');
+            var selectedNodeId = '';
+
+            function updateNodes() {
+                if (!analysisSubject || !analysisVersion || !analysisGrade || !analysisNodeTrigger || !analysisNodeDropdown) return;
+                
+                var subject = analysisSubject.value;
+                var version = analysisVersion.value;
+                var grade = analysisGrade.value;
+                
+                analysisNodeDropdown.innerHTML = '';
+                selectedNodeId = '';
+
+                if (subject && version && grade) {
+                    analysisNodeTrigger.style.background = '#fff';
+                    analysisNodeTrigger.style.cursor = 'pointer';
+                    analysisNodeTrigger.style.color = 'var(--text-dark)';
+                    analysisNodeSelectedText.textContent = '请选择课程节点';
+                    
+                    mockCourseData.chapters.forEach(function(chapter) {
+                        var chapterDiv = document.createElement('div');
+                        chapterDiv.className = 'chapter-group';
+                        
+                        var chapterHeader = document.createElement('div');
+                        chapterHeader.style.padding = '8px 12px';
+                        chapterHeader.style.cursor = 'pointer';
+                        chapterHeader.style.display = 'flex';
+                        chapterHeader.style.alignItems = 'center';
+                        chapterHeader.style.justifyContent = 'space-between';
+                        chapterHeader.style.background = '#fafafa';
+                        chapterHeader.style.borderBottom = '1px solid var(--border-color)';
+                        chapterHeader.style.fontWeight = '500';
+                        chapterHeader.style.fontSize = '14px';
+                        chapterHeader.style.color = 'var(--text-dark)';
+                        
+                        var titleSpan = document.createElement('span');
+                        titleSpan.textContent = chapter.name;
+                        
+                        var arrowSvg = document.createElement('div');
+                        arrowSvg.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.3s;"><polyline points="6 9 12 15 18 9"></polyline></svg>';
+                        var arrowIcon = arrowSvg.firstChild;
+                        
+                        chapterHeader.appendChild(titleSpan);
+                        chapterHeader.appendChild(arrowSvg);
+                        
+                        var nodesContainer = document.createElement('div');
+                        nodesContainer.style.display = 'none'; // 默认折叠
+                        nodesContainer.style.borderBottom = '1px solid var(--border-color)';
+                        
+                        chapterHeader.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            var isExpanded = nodesContainer.style.display === 'block';
+                            nodesContainer.style.display = isExpanded ? 'none' : 'block';
+                            arrowIcon.style.transform = isExpanded ? 'rotate(0deg)' : 'rotate(180deg)';
+                        });
+                        
+                        chapter.nodes.forEach(function(node) {
+                            var nodeItem = document.createElement('div');
+                            nodeItem.style.padding = '8px 12px 8px 32px';
+                            nodeItem.style.cursor = 'pointer';
+                            nodeItem.style.fontSize = '13px';
+                            nodeItem.style.color = 'var(--text-secondary)';
+                            nodeItem.style.transition = 'background 0.2s, color 0.2s';
+                            nodeItem.textContent = node.name;
+                            
+                            nodeItem.addEventListener('mouseenter', function() {
+                                if (selectedNodeId !== node.id) {
+                                    nodeItem.style.background = '#f0f7ff';
+                                    nodeItem.style.color = 'var(--primary-blue)';
+                                }
+                            });
+                            nodeItem.addEventListener('mouseleave', function() {
+                                if (selectedNodeId !== node.id) {
+                                    nodeItem.style.background = 'transparent';
+                                    nodeItem.style.color = 'var(--text-secondary)';
+                                }
+                            });
+                            
+                            nodeItem.addEventListener('click', function(e) {
+                                e.stopPropagation();
+                                selectedNodeId = node.id;
+                                analysisNodeSelectedText.textContent = node.name;
+                                analysisNodeSelectedText.style.color = 'var(--text-dark)';
+                                analysisNodeDropdown.style.display = 'none';
+                                
+                                // 重置所有选中状态
+                                var allNodes = analysisNodeDropdown.querySelectorAll('.node-item');
+                                allNodes.forEach(function(n) {
+                                    n.style.background = 'transparent';
+                                    n.style.color = 'var(--text-secondary)';
+                                    n.style.fontWeight = 'normal';
+                                });
+                                
+                                // 设置当前选中状态
+                                nodeItem.style.background = '#e6f4ff';
+                                nodeItem.style.color = 'var(--primary-blue)';
+                                nodeItem.style.fontWeight = '500';
+                            });
+                            
+                            // 标记类名用于查找
+                            nodeItem.className = 'node-item';
+                            nodesContainer.appendChild(nodeItem);
+                        });
+                        
+                        chapterDiv.appendChild(chapterHeader);
+                        chapterDiv.appendChild(nodesContainer);
+                        analysisNodeDropdown.appendChild(chapterDiv);
+                    });
+                } else {
+                    analysisNodeTrigger.style.background = '#f5f5f5';
+                    analysisNodeTrigger.style.cursor = 'not-allowed';
+                    analysisNodeTrigger.style.color = 'var(--text-secondary)';
+                    analysisNodeSelectedText.textContent = '请先选择学科/版本/年级';
+                }
+            }
+
+            if (analysisNodeTrigger) {
+                analysisNodeTrigger.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    if (analysisNodeTrigger.style.cursor === 'not-allowed') return;
+                    var isDropdownVisible = analysisNodeDropdown.style.display === 'block';
+                    analysisNodeDropdown.style.display = isDropdownVisible ? 'none' : 'block';
+                });
+            }
+
+            document.addEventListener('click', function(e) {
+                if (analysisNodeDropdown && analysisNodeTrigger) {
+                    if (!analysisNodeDropdown.contains(e.target) && !analysisNodeTrigger.contains(e.target)) {
+                        analysisNodeDropdown.style.display = 'none';
+                    }
+                }
+            });
+
+            if (analysisSubject) analysisSubject.addEventListener('change', updateNodes);
+            if (analysisVersion) analysisVersion.addEventListener('change', updateNodes);
+            if (analysisGrade) analysisGrade.addEventListener('change', updateNodes);
+
+            var isDataAnalyzed = false;
+
+            function openDataAnalysisModal() {
+                if (isDataAnalyzed) {
+                    showToast('当前暂无新数据需要纳入数据分析', 'info');
+                    return;
+                }
+                if (dataAnalysisModal) dataAnalysisModal.classList.add('active');
+            }
+
+            function closeDataAnalysisModal() {
+                if (dataAnalysisModal) dataAnalysisModal.classList.remove('active');
+            }
+
+            function startDataAnalysisProgress() {
+                if (dataAnalysisProgressContainer) {
+                    dataAnalysisProgressContainer.style.display = 'flex';
+                    btnDataAnalysis.style.display = 'none'; // Hide button during progress
+                    
+                    var progress = 0;
+                    if (dataAnalysisProgressText) dataAnalysisProgressText.textContent = '0%';
+                    if (dataAnalysisProgressBar) dataAnalysisProgressBar.style.width = '0%';
+                    
+                    var interval = setInterval(function() {
+                        progress += Math.floor(Math.random() * 15) + 5;
+                        if (progress >= 100) {
+                            progress = 100;
+                            clearInterval(interval);
+                            setTimeout(function() {
+                                dataAnalysisProgressContainer.style.display = 'none';
+                                btnDataAnalysis.style.display = 'inline-flex';
+                                isDataAnalyzed = true; // 标记已纳入过数据
+                                showToast('数据纳入分析成功', 'success');
+                            }, 300);
+                        }
+                        if (dataAnalysisProgressText) dataAnalysisProgressText.textContent = progress + '%';
+                        if (dataAnalysisProgressBar) dataAnalysisProgressBar.style.width = progress + '%';
+                    }, 200);
+                }
+            }
+
+            if (btnDataAnalysis) btnDataAnalysis.addEventListener('click', openDataAnalysisModal);
+            if (btnCloseAnalysisModal) btnCloseAnalysisModal.addEventListener('click', closeDataAnalysisModal);
+            if (btnCancelAnalysisModal) btnCancelAnalysisModal.addEventListener('click', closeDataAnalysisModal);
+            
+            var btnSkipAnalysisModal = document.getElementById('btn-skip-analysis-modal');
+            if (btnSkipAnalysisModal) {
+                btnSkipAnalysisModal.addEventListener('click', function() {
+                    closeDataAnalysisModal();
+                    startDataAnalysisProgress();
+                });
+            }
+            
+            if (btnConfirmAnalysisModal) {
+                btnConfirmAnalysisModal.addEventListener('click', function() {
+                    closeDataAnalysisModal();
+                    startDataAnalysisProgress();
+                });
             }
 
         })();
