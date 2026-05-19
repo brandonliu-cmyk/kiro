@@ -1671,57 +1671,13 @@
                 <button class="modal-close" id="btn-close-analysis-modal" aria-label="关闭">&times;</button>
             </div>
             
-            <div style="font-size: 14px; color: var(--text-dark); margin-bottom: 24px; text-align: center;">
-                当前题目尚未关联章节，是否需要关联？
-            </div>
-
             <div style="margin-bottom: 20px;">
-                <div style="display: flex; align-items: center; margin-bottom: 16px;">
-                    <span style="width: 80px; font-size: 14px; color: var(--text-secondary);">学科</span>
-                    <select id="analysis-subject" style="flex: 1; height: 36px; border: 1px solid var(--border-color); border-radius: 4px; padding: 0 12px; font-size: 14px; color: var(--text-dark); outline: none;">
-                        <option value="">请选择学科</option>
-                        <option value="math">数学</option>
-                        <option value="chinese">语文</option>
-                        <option value="english">英语</option>
-                    </select>
-                </div>
-                <div style="display: flex; align-items: center; margin-bottom: 16px;">
-                    <span style="width: 80px; font-size: 14px; color: var(--text-secondary);">教材版本</span>
-                    <select id="analysis-version" style="flex: 1; height: 36px; border: 1px solid var(--border-color); border-radius: 4px; padding: 0 12px; font-size: 14px; color: var(--text-dark); outline: none;">
-                        <option value="">请选择教材版本</option>
-                        <option value="pep">人教版</option>
-                        <option value="bnu">北师大版</option>
-                        <option value="sj">苏教版</option>
-                    </select>
-                </div>
-                <div style="display: flex; align-items: center; margin-bottom: 16px;">
-                    <span style="width: 80px; font-size: 14px; color: var(--text-secondary);">年级</span>
-                    <select id="analysis-grade" style="flex: 1; height: 36px; border: 1px solid var(--border-color); border-radius: 4px; padding: 0 12px; font-size: 14px; color: var(--text-dark); outline: none;">
-                        <option value="">请选择年级</option>
-                        <option value="1">一年级</option>
-                        <option value="2">二年级</option>
-                        <option value="3">三年级</option>
-                        <option value="4">四年级</option>
-                        <option value="5">五年级</option>
-                        <option value="6">六年级</option>
-                    </select>
-                </div>
-                <div style="display: flex; align-items: center; position: relative;">
-                    <span style="width: 80px; font-size: 14px; color: var(--text-secondary);">课程节点</span>
-                    <div id="analysis-node-trigger" style="flex: 1; height: 36px; border: 1px solid var(--border-color); border-radius: 4px; padding: 0 12px; font-size: 14px; color: var(--text-secondary); background: #f5f5f5; cursor: not-allowed; display: flex; align-items: center; justify-content: space-between; user-select: none;">
-                        <span id="analysis-node-selected-text">请先选择学科/版本/年级</span>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="6 9 12 15 18 9"></polyline>
-                        </svg>
-                    </div>
-                    <div id="analysis-node-dropdown" style="display: none; position: absolute; top: 100%; left: 80px; right: 0; margin-top: 4px; background: #fff; border: 1px solid var(--border-color); border-radius: 4px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-height: 240px; overflow-y: auto; z-index: 1000;">
-                        <!-- 动态填充级联菜单内容 -->
-                    </div>
-                </div>
+                <select id="analysis-grade" style="width: 100%; height: 36px; border: 1px solid var(--border-color); border-radius: 4px; padding: 0 12px; font-size: 14px; color: var(--text-dark); outline: none;">
+                    <option value="">请选择学期</option>
+                </select>
             </div>
 
-            <div class="modal-footer" style="display: flex; justify-content: space-between; padding-top: 16px; border-top: 1px solid var(--border-color);">
-                <button class="btn btn-secondary" id="btn-skip-analysis-modal" style="color: var(--primary-blue); border-color: var(--primary-blue);">无法匹配章节，直接纳入</button>
+            <div class="modal-footer" style="display: flex; justify-content: flex-end; padding-top: 16px; border-top: 1px solid var(--border-color);">
                 <div style="display: flex; gap: 12px;">
                     <button class="btn btn-secondary" id="btn-cancel-analysis-modal">取消</button>
                     <button class="btn btn-primary" id="btn-confirm-analysis-modal">确定</button>
@@ -4407,10 +4363,29 @@
 
             var isDataAnalyzed = false;
 
+            var GRADE_MAP = {
+                '1': '一年级',
+                '2': '二年级',
+                '3': '三年级',
+                '4': '四年级',
+                '5': '五年级',
+                '6': '六年级'
+            };
+
             function openDataAnalysisModal() {
                 if (isDataAnalyzed) {
                     showToast('当前暂无新数据需要纳入数据分析', 'info');
                     return;
+                }
+                var gradeSelect = document.getElementById('analysis-grade');
+                if (gradeSelect) {
+                    var grades = Object.keys(GRADE_MAP);
+                    var randomGrade = grades[Math.floor(Math.random() * grades.length)];
+                    gradeSelect.innerHTML = ''
+                        + '<option value="">请选择学期</option>'
+                        + '<option value="' + randomGrade + 's">' + GRADE_MAP[randomGrade] + '上</option>'
+                        + '<option value="' + randomGrade + 'x">' + GRADE_MAP[randomGrade] + '下</option>';
+                    gradeSelect.value = '';
                 }
                 if (dataAnalysisModal) dataAnalysisModal.classList.add('active');
             }
@@ -4449,14 +4424,6 @@
             if (btnDataAnalysis) btnDataAnalysis.addEventListener('click', openDataAnalysisModal);
             if (btnCloseAnalysisModal) btnCloseAnalysisModal.addEventListener('click', closeDataAnalysisModal);
             if (btnCancelAnalysisModal) btnCancelAnalysisModal.addEventListener('click', closeDataAnalysisModal);
-            
-            var btnSkipAnalysisModal = document.getElementById('btn-skip-analysis-modal');
-            if (btnSkipAnalysisModal) {
-                btnSkipAnalysisModal.addEventListener('click', function() {
-                    closeDataAnalysisModal();
-                    startDataAnalysisProgress();
-                });
-            }
             
             if (btnConfirmAnalysisModal) {
                 btnConfirmAnalysisModal.addEventListener('click', function() {
